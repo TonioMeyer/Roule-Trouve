@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chasse au trésor de la route</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Quicksand:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6EFD9;
+    --paper-dark:#EFE4C4;
+    --ink:#213042;
+    --ink-soft:#5b6b7d;
+    --route-green:#2F6E4F;
+    --route-green-dark:#204d38;
+    --highway-yellow:#F0AC3D;
+    --highway-yellow-dark:#c98a25;
+    --stop-red:#B23A2E;
+    --line-dash:#c9bfa0;
+    --card-bg:#fffdf6;
+    --radius:14px;
+    --freq:#3f8f5c;
+    --occ:#d98a2b;
+    --rare:#c0392b;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Quicksand',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    background-image: radial-gradient(var(--paper-dark) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  h1,h2,h3, .handwritten{font-family:'Kalam',cursive;}
+  button{font-family:inherit;}
+
+  .wrap{max-width:1020px;margin:0 auto;padding:28px 20px 150px;}
+
+  header.top{text-align:center;margin-bottom:8px;}
+  header.top h1{
+    font-size:clamp(30px,5vw,46px);
+    font-weight:700;
+    color:var(--route-green-dark);
+    margin:0 0 4px;
+    letter-spacing:0.5px;
+  }
+  header.top p.sub{margin:0;color:var(--ink-soft);font-size:15px;}
+
+  .road-divider{position:relative;height:26px;margin:18px 0 22px;overflow:visible;}
+  .road-divider::before{
+    content:"";position:absolute;top:50%;left:0;right:0;height:4px;
+    transform:translateY(-50%);
+    background-image: repeating-linear-gradient(90deg, var(--line-dash) 0 22px, transparent 22px 40px);
+    border-radius:2px;
+  }
+  .road-divider .car{position:absolute;top:50%;transform:translate(-50%,-65%);font-size:22px;animation: drive 5s linear infinite;}
+  @media (prefers-reduced-motion: reduce){.road-divider .car{animation:none; left:50% !important;}}
+  @keyframes drive{
+    0%{left:2%;} 50%{left:96%;}
+    50.01%{left:96%; transform:translate(-50%,-65%) scaleX(-1);}
+    99.99%{left:2%; transform:translate(-50%,-65%) scaleX(-1);}
+    100%{left:2%; transform:translate(-50%,-65%) scaleX(1);}
+  }
+
+  .trip-info{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:22px;}
+  .trip-info label{font-size:13px;color:var(--ink-soft);display:block;margin-bottom:4px;font-weight:600;}
+  .trip-info input{
+    font-family:'Kalam',cursive;font-size:17px;border:none;border-bottom:2px dashed var(--ink-soft);
+    background:transparent;padding:4px 2px;width:220px;color:var(--ink);
+  }
+  .trip-info input:focus{outline:none; border-bottom-color:var(--route-green-dark);}
+
+  /* legend + filters */
+  .legend-bar{
+    display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;
+    margin-bottom:8px;font-size:13px;color:var(--ink-soft);
+  }
+  .legend-bar .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle;}
+  .legend-bar .dot.freq{background:var(--freq);}
+  .legend-bar .dot.occ{background:var(--occ);}
+  .legend-bar .dot.rare{background:var(--rare);}
+
+  .filter-bar{
+    display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:26px;
+  }
+  .filter-btn{
+    border:1.5px solid var(--ink);
+    background:#fff;
+    color:var(--ink);
+    padding:6px 14px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .filter-btn.active{background:var(--ink); color:#fff;}
+
+  .quickpick{
+    display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;
+    margin-bottom:30px;
+    background:var(--card-bg);
+    border:2px dashed var(--line-dash);
+    border-radius:var(--radius);
+    padding:12px 16px;
+  }
+  .quickpick label{font-size:13px;color:var(--ink-soft);font-weight:600;}
+  .quickpick input[type=number]{width:56px;padding:5px;border-radius:6px;border:1px solid #d8d0b6;text-align:center;}
+  .quickpick button{background:var(--route-green);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px;}
+  .quickpick button:hover{background:var(--route-green-dark);}
+
+  .gh-panel{
+    background:var(--card-bg); border:2px dashed var(--line-dash); border-radius:var(--radius);
+    padding:12px 16px; margin-bottom:24px; font-size:13px;
+  }
+  .gh-panel .gh-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;}
+  .gh-panel input{padding:7px 9px; border-radius:6px; border:1px solid #d8d0b6; font-family:inherit; font-size:13px;}
+  .gh-panel input#ghRepo{width:200px;}
+  .gh-panel input#ghBranch{width:90px;}
+  .gh-panel input#ghToken{flex:1; min-width:180px;}
+  .gh-panel button{background:var(--route-green); color:#fff; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px;}
+  .gh-panel button:hover{background:var(--route-green-dark);}
+  .gh-status{font-size:12px; color:var(--ink-soft); margin-top:6px; display:block;}
+  .gh-note{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+
+  .edit-pencil{
+    position:absolute; bottom:-8px; right:-8px; width:22px; height:22px; border-radius:50%;
+    background:#fff; border:2px solid var(--route-green); font-size:11px; cursor:pointer; z-index:5;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+  .edit-pencil:hover{background:var(--route-green);}
+  .emoji img{width:1em; height:1em; object-fit:contain; border-radius:4px; vertical-align:middle; display:inline-block;}
+
+  .category{margin-bottom:34px;}
+  .category-head{
+    display:inline-flex;align-items:center;gap:8px;background:var(--route-green);color:#fff;
+    padding:6px 16px;border-radius:999px;font-weight:700;font-size:14px;letter-spacing:0.5px;
+    text-transform:uppercase;margin-bottom:14px;
+  }
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;}
+
+  .card{
+    position:relative;background:var(--card-bg);border:2px dashed var(--line-dash);border-radius:var(--radius);
+    padding:20px 8px 12px;text-align:center;cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease, background .12s ease;
+    font-size:14px;color:var(--ink);
+  }
+  .card:hover{transform:translateY(-2px); border-color:var(--route-green);}
+  .card .emoji{font-size:52px; display:block; margin-bottom:8px;}
+  .emoji svg{width:1em; height:1em; display:inline-block; vertical-align:middle;}
+  .card .label{font-weight:600; line-height:1.2; display:block;}
+  .card .check{
+    position:absolute;top:-8px; right:-8px;width:22px;height:22px;border-radius:50%;background:#fff;
+    border:2px solid var(--line-dash);display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;
+  }
+  .card.selected{background:var(--highway-yellow); border-style:solid; border-color:var(--highway-yellow-dark);}
+  .card.selected .check{background:var(--route-green); border-color:var(--route-green-dark); color:#fff;}
+  .card.custom-card{border-color:#a9b6c4;}
+  .card .remove-x{
+    position:absolute;top:-8px; left:-8px;width:20px;height:20px;border-radius:50%;background:var(--stop-red);
+    color:#fff;border:none;font-size:12px;line-height:20px;cursor:pointer;display:none;
+  }
+  .card.custom-card .remove-x{display:block;}
+  .rarity-badge{
+    position:absolute; top:6px; left:6px;
+    font-family:'Space Mono',monospace;
+    font-size:10px; font-weight:700;
+    color:#fff;
+    padding:1px 6px;
+    border-radius:999px;
+  }
+  .rarity-badge.r1{background:var(--freq);}
+  .rarity-badge.r2{background:var(--occ);}
+  .rarity-badge.r3{background:var(--rare);}
+  .card.hidden{display:none;}
+
+  .add-form{
+    display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card-bg);
+    border:2px dashed var(--line-dash);border-radius:var(--radius);padding:12px;
+  }
+  .add-form input[type=text]{font-family:'Quicksand',sans-serif;font-size:14px;padding:8px 10px;border:1px solid #d8d0b6;border-radius:8px;flex:1;min-width:140px;}
+  .add-form input#customEmoji{width:56px;text-align:center;font-size:18px;flex:none;}
+  .add-form select{padding:8px 6px;border-radius:8px;border:1px solid #d8d0b6;font-family:inherit;font-size:13px;}
+  .add-form button{background:var(--route-green);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;}
+  .add-form button:hover{background:var(--route-green-dark);}
+  .hint{font-size:12px;color:var(--ink-soft); width:100%;}
+
+  .stickybar{
+    position:fixed;left:0;right:0;bottom:0;background:var(--ink);color:#fff;padding:12px 20px;
+    display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;
+    box-shadow:0 -4px 14px rgba(0,0,0,.2); z-index:50;
+  }
+  .odometer{
+    font-family:'Space Mono',monospace;background:#0e1620;border:2px solid #445164;border-radius:6px;
+    padding:6px 12px;letter-spacing:2px;font-size:15px;
+  }
+  .odometer span{color:var(--highway-yellow);}
+  .stickybar label{font-size:13px;}
+  .stickybar select{font-family:inherit;padding:5px 8px;border-radius:6px;border:none;}
+  .btn-primary{background:var(--highway-yellow);color:var(--ink);border:none;padding:10px 20px;border-radius:999px;font-weight:700;cursor:pointer;font-size:14px;}
+  .btn-primary:hover{background:var(--highway-yellow-dark); color:#fff;}
+  .btn-primary:disabled{opacity:.4; cursor:not-allowed;}
+  .btn-ghost{background:transparent;border:1px solid #66748a;color:#fff;padding:9px 16px;border-radius:999px;cursor:pointer;font-size:13px;}
+  .btn-ghost:hover{border-color:#fff;}
+
+  #preview-view{display:none;}
+  .preview-toolbar{display:flex;justify-content:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
+  .sheet{background:var(--card-bg);border:2px solid var(--ink);border-radius:10px;padding:26px 30px 30px;margin:0 auto 40px;max-width:780px;position:relative;}
+  .sheet-header{text-align:center;border-bottom:3px dashed var(--ink);padding-bottom:14px;margin-bottom:18px;}
+  .sheet-header h2{font-size:30px;margin:0 0 6px;color:var(--route-green-dark);}
+  .sheet-header .fields{display:flex;justify-content:center;gap:26px;flex-wrap:wrap;font-size:14px;margin-top:8px;}
+  .sheet-header .fields span.line{display:inline-block;min-width:140px;border-bottom:1px solid var(--ink);font-family:'Kalam',cursive;font-size:16px;padding-bottom:2px;}
+  .sheet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
+  .sheet-item{border:1.5px dashed var(--line-dash);border-radius:10px;padding:12px 10px;display:flex;align-items:center;gap:10px;font-size:13px;position:relative;}
+  .sheet-item .box{width:20px;height:20px;border:2px solid var(--ink);border-radius:4px;flex:none;}
+  .sheet-item .emoji{font-size:30px;}
+  .sheet-item .pts{
+    position:absolute; top:-8px; right:-6px;
+    font-family:'Space Mono',monospace; font-size:10px; font-weight:700;
+    background:var(--ink); color:#fff; padding:1px 5px; border-radius:999px;
+  }
+  .sheet-footer{display:flex;justify-content:space-between;margin-top:18px;font-size:11px;color:var(--ink-soft);border-top:1px dashed var(--line-dash);padding-top:8px;flex-wrap:wrap;gap:6px;}
+  .no-print-note{text-align:center;font-size:13px;color:var(--ink-soft);margin-bottom:20px;}
+
+  @media print{
+    body{background:#fff !important;}
+    .stickybar, .road-divider .car, header.top, .no-print, #builder-view{display:none !important;}
+    #preview-view{display:block !important;}
+    .sheet{box-shadow:none;border:1.5px solid #000;margin:0 auto 0;page-break-after:always;}
+    .sheet:last-child{page-break-after:auto;}
+    body{background-image:none;}
+  }
+
+  @media (max-width:520px){.trip-info input{width:100%;}}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="builder-view">
+  <header class="top">
+    <h1>🧭 Chasse au trésor de la route</h1>
+    <p class="sub">Coche les éléments à repérer, ajoute les tiens, puis génère la fiche à imprimer.</p>
+  </header>
+
+  <div class="road-divider"><span class="car">🚙</span></div>
+
+  <div class="trip-info">
+    <div>
+      <label for="pilotName">Nom du copilote</label>
+      <input type="text" id="pilotName" placeholder="ex : Léa">
+    </div>
+    <div>
+      <label for="destination">Destination</label>
+      <input type="text" id="destination" placeholder="ex : la mer !">
+    </div>
+  </div>
+
+  <div class="gh-panel no-print">
+    <button class="btn-ghost" id="ghToggle" style="color:var(--ink); border-color:var(--ink);">⚙️ Connecter GitHub pour modifier les images</button>
+    <div id="ghForm" style="display:none;">
+      <div class="gh-row">
+        <input type="text" id="ghRepo" placeholder="propriétaire/repo">
+        <input type="text" id="ghBranch" placeholder="branche" value="main">
+        <input type="password" id="ghToken" placeholder="Token GitHub (jamais sauvegardé)">
+        <button id="ghConnectBtn">Se connecter</button>
+      </div>
+      <p class="gh-note">Le token n'est gardé qu'en mémoire le temps de cette session — il faudra le recoller à chaque réouverture de la page. Utilise de préférence un token à portée limitée (Contents: Read/Write sur ce seul repo).</p>
+      <span class="gh-status" id="ghStatus"></span>
+    </div>
+  </div>
+
+  <div class="legend-bar">
+    <span><span class="dot freq"></span>Fréquent · 1 pt</span>
+    <span><span class="dot occ"></span>Occasionnel · 3 pts</span>
+    <span><span class="dot rare"></span>Rare · 5 pts</span>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" data-filter="all">Tous</button>
+    <button class="filter-btn" data-filter="1">🟢 Fréquents</button>
+    <button class="filter-btn" data-filter="2">🟠 Occasionnels</button>
+    <button class="filter-btn" data-filter="3">🔴 Rares</button>
+  </div>
+
+  <div class="quickpick">
+    <label for="targetCount">Sélection équilibrée pour environ</label>
+    <input type="number" id="targetCount" value="20" min="6" max="90">
+    <label>éléments</label>
+    <button id="quickPickBtn">🎲 Choisir pour moi</button>
+    <button id="clearBtn2" style="background:var(--stop-red)">Tout désélectionner</button>
+  </div>
+
+  <div id="categories"></div>
+
+  <div class="category">
+    <div class="category-head">➕ Ajouter un élément</div>
+    <div class="add-form">
+      <input type="text" id="customEmoji" placeholder="🔎" maxlength="4">
+      <input type="text" id="customLabel" placeholder="ex : Camion de déménagement">
+      <select id="customRarity">
+        <option value="1">🟢 Fréquent</option>
+        <option value="2" selected>🟠 Occasionnel</option>
+        <option value="3">🔴 Rare</option>
+      </select>
+      <button id="addBtn">Ajouter</button>
+      <span class="hint">Astuce : colle un emoji (🚀, 🐘, 🎪...) dans la 1ère case, ou laisse-la vide.</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="preview-view">
+  <div class="preview-toolbar no-print">
+    <button class="btn-ghost" id="backBtn">← Retour à l'édition</button>
+    <button class="btn-ghost" id="shuffleBtn">🔀 Mélanger l'ordre</button>
+    <button class="btn-primary" id="printBtn">🖨️ Imprimer</button>
+  </div>
+  <p class="no-print-note no-print">Aperçu de la fiche imprimable — utilise « Imprimer » pour lancer l'impression.</p>
+  <div id="sheets"></div>
+</div>
+
+<div class="stickybar no-print" id="stickybar">
+  <div class="odometer">🎯 <span id="countDisplay">0</span> éléments · <span id="ptsDisplay">0</span> pts max</div>
+  <div>
+    <label for="perPage">Par page&nbsp;</label>
+    <select id="perPage">
+      <option value="9">9</option>
+      <option value="12" selected>12</option>
+      <option value="16">16</option>
+      <option value="20">20</option>
+    </select>
+  </div>
+  <button class="btn-ghost" id="clearBtn">Tout désélectionner</button>
+  <button class="btn-primary" id="generateBtn">Générer la fiche →</button>
+</div>
+
+<script>
+// rarity: 1 = fréquent (1 pt), 2 = occasionnel (3 pts), 3 = rare (5 pts)
+const DEFAULT_ITEMS = [
+  // --- VÉHICULES ---
+  {cat:"Véhicules", emoji:"🔴🚗", label:"Voiture rouge", rarity:1},
+  {cat:"Véhicules", emoji:"🔵🚗", label:"Voiture bleue", rarity:1},
+  {cat:"Véhicules", emoji:"⚪🚗", label:"Voiture blanche", rarity:1},
+  {cat:"Véhicules", emoji:"⚫🚗", label:"Voiture noire", rarity:1},
+  {cat:"Véhicules", emoji:"🔘🚗", label:"Voiture grise", rarity:1},
+  {cat:"Véhicules", emoji:"🟡🚗", label:"Voiture jaune", rarity:2},
+  {cat:"Véhicules", emoji:"🟢🚗", label:"Voiture verte", rarity:2},
+  {cat:"Véhicules", emoji:"🚚", label:"Camion", rarity:1},
+  {cat:"Véhicules", emoji:"🛢️🚚", label:"Camion-citerne", rarity:3},
+  {cat:"Véhicules", emoji:"🚐", label:"Camping-car", rarity:2},
+  {cat:"Véhicules", emoji:"🏕️🚗", label:"Caravane tractée", rarity:2},
+  {cat:"Véhicules", emoji:"🏍️", label:"Moto", rarity:1},
+  {cat:"Véhicules", emoji:"🛵", label:"Scooter", rarity:1},
+  {cat:"Véhicules", emoji:"🚌", label:"Bus / Car", rarity:1},
+  {cat:"Véhicules", emoji:"🚕", label:"Taxi", rarity:2},
+  {cat:"Véhicules", emoji:"🚓", label:"Voiture de police", rarity:2},
+  {cat:"Véhicules", emoji:"🚒", label:"Camion de pompiers", rarity:3},
+  {cat:"Véhicules", emoji:"🚑", label:"Ambulance", rarity:2},
+  {cat:"Véhicules", emoji:"🚜", label:"Tracteur", rarity:2},
+  {cat:"Véhicules", emoji:"🚲", label:"Vélo", rarity:1},
+  {cat:"Véhicules", emoji:"📦🚚", label:"Camion de déménagement", rarity:3},
+  {cat:"Véhicules", emoji:"🍔🚚", label:"Food-truck", rarity:3},
+  {cat:"Véhicules", emoji:"🏎️", label:"Voiture décapotable / sport", rarity:3},
+  {cat:"Véhicules", emoji:"🚂", label:"Train", rarity:2},
+  {cat:"Véhicules", emoji:"✈️", label:"Avion dans le ciel", rarity:2},
+  {cat:"Véhicules", emoji:"🚁", label:"Hélicoptère", rarity:3},
+
+  // --- MOBILIER URBAIN & VIE QUOTIDIENNE ---
+  {cat:"Mobilier urbain", emoji:"🚸", label:"Passage piéton", rarity:1},
+  {cat:"Mobilier urbain", emoji:"🚏", label:"Arrêt de bus / abribus", rarity:1},
+  {cat:"Mobilier urbain", emoji:"🧯", icon:"borne_incendie", label:"Borne à incendie", rarity:2},
+  {cat:"Mobilier urbain", emoji:"🗑️", icon:"poubelle_jaune", label:"Poubelle jaune (tri)", rarity:1},
+  {cat:"Mobilier urbain", emoji:"🗑️", icon:"poubelle_verte", label:"Poubelle verte", rarity:1},
+  {cat:"Mobilier urbain", emoji:"🗑️", icon:"poubelle_marron", label:"Poubelle marron (compost)", rarity:2},
+  {cat:"Mobilier urbain", emoji:"📮", label:"Boîte aux lettres jaune", rarity:2},
+  {cat:"Mobilier urbain", emoji:"☎️", label:"Cabine téléphonique", rarity:3},
+  {cat:"Mobilier urbain", emoji:"🪑", icon:"banc", label:"Banc public", rarity:1},
+  {cat:"Mobilier urbain", emoji:"⛲", label:"Fontaine publique", rarity:2},
+  {cat:"Mobilier urbain", emoji:"🕰️", label:"Horloge / clocher", rarity:2},
+  {cat:"Mobilier urbain", emoji:"🗿", label:"Statue ou monument", rarity:2},
+  {cat:"Mobilier urbain", emoji:"🛝", label:"Aire de jeux", rarity:2},
+
+  // --- COMMERCES & SERVICES ---
+  {cat:"Commerces & services", emoji:"⛽", label:"Station-service", rarity:1},
+  {cat:"Commerces & services", emoji:"🚿🚗", label:"Station de lavage", rarity:2},
+  {cat:"Commerces & services", emoji:"🛒", label:"Supermarché", rarity:1},
+  {cat:"Commerces & services", emoji:"🥖", label:"Boulangerie", rarity:1},
+  {cat:"Commerces & services", emoji:"💊", label:"Pharmacie (croix verte)", rarity:1},
+  {cat:"Commerces & services", emoji:"🏨", label:"Hôtel", rarity:2},
+  {cat:"Commerces & services", emoji:"⛺", label:"Camping", rarity:2},
+  {cat:"Commerces & services", emoji:"🍔", label:"Fast-food", rarity:2},
+  {cat:"Commerces & services", emoji:"🔌🚗", label:"Borne de recharge électrique", rarity:2},
+  {cat:"Commerces & services", emoji:"🔧", label:"Garage automobile", rarity:2},
+  {cat:"Commerces & services", emoji:"🤝🚗", label:"Aire de covoiturage", rarity:3},
+
+  // --- PANNEAUX & SIGNALISATION ---
+  {cat:"Panneaux & signalisation", emoji:"🛑", icon:"stop", label:"Panneau stop", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"🔺", icon:"cedez", label:"Cédez le passage", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"⛔", icon:"sens_interdit", label:"Sens interdit", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"3️⃣0️⃣", icon:"limit_30", label:"Limitation 30", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"5️⃣0️⃣", icon:"limit_50", label:"Limitation 50", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"7️⃣0️⃣", icon:"limit_70", label:"Limitation 70", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"9️⃣0️⃣", icon:"limit_90", label:"Limitation 90", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"1️⃣1️⃣0️⃣", icon:"limit_110", label:"Limitation 110", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"1️⃣3️⃣0️⃣", icon:"limit_130", label:"Limitation 130", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"⚪🚫", icon:"fin_limitation", label:"Fin de limitation de vitesse", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"🚦", label:"Feu tricolore", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"🔁", icon:"rond_point", label:"Rond-point", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"🚧", label:"Panneau travaux", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"📷", icon:"radar", label:"Radar", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"💳", icon:"telepeage", label:"Voie télépéage", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"🅿️", label:"Parking", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"🚻", label:"Aire de repos (panneau)", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"🟡📍", icon:"borne_km_jaune", label:"Borne kilométrique jaune (départementale)", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"🔴📍", icon:"borne_km_rouge", label:"Borne kilométrique rouge (nationale)", rarity:3},
+  {cat:"Panneaux & signalisation", emoji:"🔵➡️", icon:"dir_bleu", label:"Panneau directionnel bleu (autoroute)", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"🟢➡️", icon:"dir_vert", label:"Panneau directionnel vert (nationale)", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"⚪➡️", icon:"dir_blanc", label:"Panneau directionnel blanc (départementale)", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"🏙️", icon:"entree_ville", label:"Panneau d'entrée de ville", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"🏙️🚫", icon:"sortie_ville", label:"Panneau de sortie de ville (barré)", rarity:1},
+  {cat:"Panneaux & signalisation", emoji:"◆", icon:"priorite_droite", label:"Priorité à droite", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"⚠️", icon:"danger", label:"Panneau danger / route glissante", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"🦌", label:"Passage d'animaux sauvages", rarity:3},
+  {cat:"Panneaux & signalisation", emoji:"🚫🚗", icon:"interdiction_depasser", label:"Interdiction de dépasser (sauf deux-roues)", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"🚫🚚", icon:"interdiction_depasser_pl", label:"Interdiction de dépasser (poids lourds >3,5t)", rarity:2},
+  {cat:"Panneaux & signalisation", emoji:"3️⃣0️⃣🏘️", icon:"zone30", label:"Zone 30", rarity:2},
+
+  // --- NATURE & ANIMAUX ---
+  {cat:"Nature & animaux", emoji:"🌈", label:"Arc-en-ciel", rarity:3},
+  {cat:"Nature & animaux", emoji:"🌉", label:"Pont", rarity:1},
+  {cat:"Nature & animaux", emoji:"🏞️", label:"Rivière", rarity:1},
+  {cat:"Nature & animaux", emoji:"⛰️", label:"Montagne", rarity:2},
+  {cat:"Nature & animaux", emoji:"🌻", label:"Champ de tournesols", rarity:2},
+  {cat:"Nature & animaux", emoji:"🌾", label:"Champ de blé", rarity:1},
+  {cat:"Nature & animaux", emoji:"🌲", label:"Forêt", rarity:1},
+  {cat:"Nature & animaux", emoji:"🍇", label:"Vignes", rarity:2},
+  {cat:"Nature & animaux", emoji:"🌀", label:"Éolienne", rarity:2},
+  {cat:"Nature & animaux", emoji:"🌅", label:"Coucher de soleil", rarity:2},
+  {cat:"Nature & animaux", emoji:"🗼💧", label:"Château d'eau", rarity:2},
+  {cat:"Nature & animaux", emoji:"🌽", label:"Silo agricole", rarity:2},
+  {cat:"Nature & animaux", emoji:"🎃", label:"Épouvantail", rarity:3},
+  {cat:"Nature & animaux", emoji:"🐄", label:"Vache", rarity:1},
+  {cat:"Nature & animaux", emoji:"🐎", label:"Cheval", rarity:2},
+  {cat:"Nature & animaux", emoji:"🐑", label:"Mouton", rarity:2},
+  {cat:"Nature & animaux", emoji:"🐐", label:"Chèvre", rarity:3},
+  {cat:"Nature & animaux", emoji:"🐖", label:"Cochon", rarity:3},
+  {cat:"Nature & animaux", emoji:"🐓", label:"Poule ou coq", rarity:2},
+  {cat:"Nature & animaux", emoji:"🐕", label:"Chien promené", rarity:1},
+  {cat:"Nature & animaux", emoji:"🐈", label:"Chat", rarity:2},
+  {cat:"Nature & animaux", emoji:"🦆", label:"Canard", rarity:2},
+  {cat:"Nature & animaux", emoji:"🦋", label:"Papillon", rarity:2},
+  {cat:"Nature & animaux", emoji:"🦢", label:"Cigogne ou grand oiseau", rarity:3},
+
+  // --- INFRASTRUCTURES & PATRIMOINE ---
+  {cat:"Infrastructures & patrimoine", emoji:"⛪", label:"Église", rarity:1},
+  {cat:"Infrastructures & patrimoine", emoji:"🏰", label:"Château", rarity:3},
+  {cat:"Infrastructures & patrimoine", emoji:"🚉", label:"Gare", rarity:2},
+  {cat:"Infrastructures & patrimoine", emoji:"🚂🚧", label:"Passage à niveau", rarity:3},
+  {cat:"Infrastructures & patrimoine", emoji:"🌉🛣️", label:"Viaduc autoroutier", rarity:3},
+  {cat:"Infrastructures & patrimoine", emoji:"🚇", label:"Tunnel", rarity:2},
+  {cat:"Infrastructures & patrimoine", emoji:"⚡", label:"Pylône électrique", rarity:1},
+  {cat:"Infrastructures & patrimoine", emoji:"🖼️", label:"Panneau publicitaire (4x3)", rarity:1},
+  {cat:"Infrastructures & patrimoine", emoji:"🇫🇷", label:"Drapeau français (mairie)", rarity:2},
+  {cat:"Infrastructures & patrimoine", emoji:"🏛️", label:"Mairie", rarity:2},
+  {cat:"Infrastructures & patrimoine", emoji:"🏫", label:"École", rarity:2},
+  {cat:"Infrastructures & patrimoine", emoji:"👮", label:"Gendarmerie", rarity:3},
+  {cat:"Infrastructures & patrimoine", emoji:"🏖️", label:"Plage", rarity:3},
+  {cat:"Infrastructures & patrimoine", emoji:"⛵", label:"Bateau", rarity:3},
+];
+
+const POINTS = {1:1, 2:3, 3:5};
+
+// --- Icônes réalistes (SVG, viewBox 64x64, taille pilotée en CSS via 1em) ---
+function limitSVG(num){
+  const fs = num.length>2 ? 20 : 25;
+  return `<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="#ffffff" stroke="#c0392b" stroke-width="7"/><text x="32" y="41" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="${fs}" fill="#1a1a1a" text-anchor="middle">${num}</text></svg>`;
+}
+function poubelleSVG(color){
+  return `<svg viewBox="0 0 64 64"><path d="M14,20 L50,20 L44,55 L20,55 Z" fill="#8a8f98" stroke="#374151" stroke-width="2.5"/><rect x="11" y="14" width="42" height="8" rx="2" fill="${color}" stroke="#374151" stroke-width="2.5"/><rect x="29" y="9" width="6" height="6" rx="1.5" fill="${color}" stroke="#374151" stroke-width="1.5"/><circle cx="25" cy="57" r="3.5" fill="#111827"/><circle cx="39" cy="57" r="3.5" fill="#111827"/></svg>`;
+}
+function borneKmSVG(color){
+  return `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="59" rx="17" ry="3" fill="#4b7f52"/><path d="M17,57 L17,20 A15,15 0 0 1 47,20 L47,57 Z" fill="#ffffff" stroke="#111827" stroke-width="2.5"/><path d="M17,34 L17,20 A15,15 0 0 1 47,20 L47,34 Z" fill="${color}" stroke="#111827" stroke-width="2.5"/><line x1="17" y1="34" x2="47" y2="34" stroke="#111827" stroke-width="2"/><text x="32" y="50" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="16" fill="#111827" text-anchor="middle">12</text></svg>`;
+}
+function directionSVG(bg, arrow, border){
+  return `<svg viewBox="0 0 64 64"><rect x="6" y="19" width="52" height="26" rx="3" fill="${bg}" stroke="${border}" stroke-width="2.5"/><polygon points="46,32 32,23 32,28.5 19,28.5 19,35.5 32,35.5 32,41" fill="${arrow}"/></svg>`;
+}
+function carSil(fill, dx){
+  return `<path d="M${2+dx},40 L${5+dx},40 L${9+dx},32 L${25+dx},32 L${29+dx},40 L${32+dx},40 L${32+dx},43 L${2+dx},43 Z" fill="${fill}" stroke="#111827" stroke-width="1"/><circle cx="${8+dx}" cy="43" r="3" fill="#111827"/><circle cx="${26+dx}" cy="43" r="3" fill="#111827"/>`;
+}
+function truckSil(fill, dx){
+  return `<path d="M${2+dx},40 L${2+dx},31 L${11+dx},31 L${13+dx},27 L${21+dx},27 L${21+dx},40 L${35+dx},40 L${35+dx},43 L${2+dx},43 Z" fill="${fill}" stroke="#111827" stroke-width="1"/><circle cx="${7+dx}" cy="43" r="3" fill="#111827"/><circle cx="${29+dx}" cy="43" r="3" fill="#111827"/>`;
+}
+function overtakeSVG(blackSil, redSil){
+  return `<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="#ffffff" stroke="#c0392b" stroke-width="6"/>${blackSil("#111827",0)}${redSil("#c0392b",14)}</svg>`;
+}
+const ICONS = {
+  borne_incendie: `<svg viewBox="0 0 64 64"><rect x="21" y="46" width="22" height="7" rx="1.5" fill="#7a1f1f"/><rect x="18" y="42" width="28" height="6" rx="2" fill="#a83232"/><rect x="25" y="16" width="14" height="30" rx="4" fill="#c0392b" stroke="#7a1f1f" stroke-width="2.5"/><circle cx="32" cy="15" r="9" fill="#c0392b" stroke="#7a1f1f" stroke-width="2.5"/><rect x="28" y="6" width="8" height="7" rx="1.5" fill="#7a1f1f"/><circle cx="18" cy="27" r="4.5" fill="#a83232" stroke="#7a1f1f" stroke-width="1.5"/><circle cx="46" cy="27" r="4.5" fill="#a83232" stroke="#7a1f1f" stroke-width="1.5"/><rect x="26" y="33" width="12" height="3.5" fill="#7a1f1f"/></svg>`,
+  poubelle_jaune: poubelleSVG("#F2C511"),
+  poubelle_verte: poubelleSVG("#2F8F46"),
+  poubelle_marron: poubelleSVG("#7B4B2A"),
+  limit_30: limitSVG("30"),
+  limit_50: limitSVG("50"),
+  limit_70: limitSVG("70"),
+  limit_90: limitSVG("90"),
+  limit_110: limitSVG("110"),
+  limit_130: limitSVG("130"),
+  fin_limitation: `<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="#ffffff" stroke="#6b7280" stroke-width="3"/><text x="32" y="41" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="22" fill="#111827" text-anchor="middle">50</text><line x1="10" y1="50" x2="54" y2="14" stroke="#111827" stroke-width="4" stroke-linecap="round"/></svg>`,
+  stop: `<svg viewBox="0 0 64 64"><polygon points="21,6 43,6 58,21 58,43 43,58 21,58 6,43 6,21" fill="#c0392b" stroke="#ffffff" stroke-width="2.5"/><text x="32" y="39" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="14" fill="#ffffff" text-anchor="middle" letter-spacing="1">STOP</text></svg>`,
+  cedez: `<svg viewBox="0 0 64 64"><polygon points="6,10 58,10 32,58" fill="#ffffff" stroke="#c0392b" stroke-width="6" stroke-linejoin="round"/></svg>`,
+  sens_interdit: `<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="#c0392b" stroke="#7a1f1f" stroke-width="2.5"/><rect x="12" y="27" width="40" height="10" rx="2" fill="#ffffff"/></svg>`,
+  zone30: `<svg viewBox="0 0 64 64"><rect x="8" y="8" width="48" height="48" rx="5" fill="#ffffff" stroke="#c0392b" stroke-width="5"/><text x="32" y="23" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="9" fill="#1a1a1a" text-anchor="middle">ZONE</text><text x="32" y="46" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="20" fill="#1a1a1a" text-anchor="middle">30</text></svg>`,
+  danger: `<svg viewBox="0 0 64 64"><polygon points="32,6 58,54 6,54" fill="#ffffff" stroke="#c0392b" stroke-width="5" stroke-linejoin="round"/><text x="32" y="46" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="26" fill="#1a1a1a" text-anchor="middle">!</text></svg>`,
+  priorite_droite: `<svg viewBox="0 0 64 64"><polygon points="32,6 58,54 6,54" fill="#ffffff" stroke="#c0392b" stroke-width="5" stroke-linejoin="round"/><line x1="20" y1="28" x2="44" y2="50" stroke="#111827" stroke-width="6" stroke-linecap="round"/><line x1="44" y1="28" x2="20" y2="50" stroke="#111827" stroke-width="6" stroke-linecap="round"/></svg>`,
+  radar: `<svg viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="6" fill="#ffffff" stroke="#e0a800" stroke-width="3"/><rect x="4" y="4" width="56" height="10" rx="6" fill="#4b5563"/><rect x="4" y="50" width="56" height="10" rx="6" fill="#4b5563"/><path d="M30,38 L34,29 L46,29 L50,38 Z" fill="#111827"/><rect x="28" y="37" width="24" height="4" rx="1" fill="#111827"/><circle cx="33" cy="41" r="2" fill="#ffffff"/><circle cx="47" cy="41" r="2" fill="#ffffff"/><circle cx="13" cy="41" r="2.2" fill="#111827"/><path d="M17 37 A5.5 5.5 0 0 1 17 45" fill="none" stroke="#111827" stroke-width="2.2"/><path d="M20 33 A10.5 10.5 0 0 1 20 49" fill="none" stroke="#111827" stroke-width="2.2"/></svg>`,
+  banc: `<svg viewBox="0 0 64 64"><rect x="8" y="12" width="4" height="42" fill="#2f6e4f"/><rect x="52" y="12" width="4" height="42" fill="#2f6e4f"/><rect x="8" y="12" width="48" height="4" fill="#8b5a2b"/><rect x="8" y="19" width="48" height="4" fill="#8b5a2b"/><rect x="8" y="30" width="48" height="4" fill="#8b5a2b"/><rect x="8" y="37" width="48" height="4" fill="#8b5a2b"/></svg>`,
+  telepeage: `<svg viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="6" fill="#1D4ED8" stroke="#ffffff" stroke-width="4"/><path d="M12,22 L23,22 L27,7 L41,5 L35,22 L50,22 L50,31 L12,31 Z" fill="#EF7D2D"/><rect x="24" y="28" width="10" height="18" fill="#EF7D2D"/><path d="M25,44 Q25,55 35,55 Q44,55 45,47" stroke="#EF7D2D" stroke-width="9" fill="none" stroke-linecap="round"/></svg>`,
+  rond_point: `<svg viewBox="0 0 64 64"><polygon points="32,6 58,54 6,54" fill="#ffffff" stroke="#c0392b" stroke-width="5" stroke-linejoin="round"/><path d="M22 28 Q32 22 42 28" fill="none" stroke="#111827" stroke-width="3.5" stroke-linecap="round"/><polygon points="42,28 37,25.5 38,31" fill="#111827"/><path d="M46 44 Q44 54 34 54" fill="none" stroke="#111827" stroke-width="3.5" stroke-linecap="round"/><polygon points="34,54 39,50.5 39,57" fill="#111827"/><path d="M20 44 Q14 34 20 26" fill="none" stroke="#111827" stroke-width="3.5" stroke-linecap="round"/><polygon points="20,26 15,29 22,30" fill="#111827"/></svg>`,
+  entree_ville: `<svg viewBox="0 0 64 64"><rect x="4" y="20" width="56" height="24" rx="2" fill="#ffffff" stroke="#c0392b" stroke-width="3.5"/><text x="32" y="37" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="11" fill="#111827" text-anchor="middle">VILLAGE</text></svg>`,
+  sortie_ville: `<svg viewBox="0 0 64 64"><rect x="4" y="20" width="56" height="24" rx="2" fill="#ffffff" stroke="#c0392b" stroke-width="3.5"/><text x="32" y="37" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="11" fill="#111827" text-anchor="middle">VILLAGE</text><line x1="6" y1="42" x2="58" y2="22" stroke="#c0392b" stroke-width="3.5"/></svg>`,
+  borne_km_jaune: borneKmSVG("#F2C511"),
+  borne_km_rouge: borneKmSVG("#C0392B"),
+  dir_bleu: directionSVG("#1D4ED8", "#ffffff", "#111827"),
+  dir_vert: directionSVG("#15803d", "#ffffff", "#111827"),
+  dir_blanc: directionSVG("#ffffff", "#111827", "#111827"),
+  interdiction_depasser: overtakeSVG(carSil, carSil),
+  interdiction_depasser_pl: overtakeSVG(truckSil, carSil),
+};
+// --- Connexion GitHub pour les images personnalisées ---
+let gh = {owner:"", repo:"", branch:"main", token:"", connected:false};
+let customIcons = {}; // slug -> URL (blob ou data URI)
+
+function slugify(s){
+  return s.toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+}
+
+function visual(item){
+  const slug = slugify(item.label);
+  if(customIcons[slug]) return `<img src="${customIcons[slug]}" alt="${item.label}">`;
+  return item.icon ? ICONS[item.icon] : item.emoji;
+}
+
+function setGhStatus(msg){
+  const el = document.getElementById('ghStatus');
+  if(el) el.textContent = msg;
+}
+
+function fileToPngBase64(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxDim = 128;
+        let w = img.naturalWidth || maxDim, h = img.naturalHeight || maxDim;
+        const scale = Math.min(1, maxDim / Math.max(w,h));
+        w = Math.max(1, Math.round(w*scale));
+        h = Math.max(1, Math.round(h*scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0,w,h);
+        ctx.drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/png').split(',')[1]);
+      };
+      img.onerror = ()=>reject(new Error("Image illisible"));
+      img.src = e.target.result;
+    };
+    reader.onerror = ()=>reject(new Error("Lecture du fichier impossible"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadIcon(slug, file){
+  if(!gh.connected){ setGhStatus("Connecte-toi d'abord à GitHub."); return; }
+  setGhStatus(`Envoi de l'image pour « ${slug} »...`);
+  try{
+    const base64 = await fileToPngBase64(file);
+    const path = `icons/${slug}.png`;
+    let sha = null;
+    try{
+      const getRes = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${path}?ref=${encodeURIComponent(gh.branch)}`, {
+        headers: { "Authorization": `token ${gh.token}`, "Accept": "application/vnd.github+json" }
+      });
+      if(getRes.ok){ const j = await getRes.json(); sha = j.sha; }
+    } catch(e){ /* fichier probablement inexistant, on va le créer */ }
+
+    const putRes = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${path}`, {
+      method: "PUT",
+      headers: { "Authorization": `token ${gh.token}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: `Mise à jour icône : ${slug}`,
+        content: base64,
+        branch: gh.branch,
+        ...(sha ? {sha} : {})
+      })
+    });
+    if(!putRes.ok){
+      const errJson = await putRes.json().catch(()=>({}));
+      throw new Error(errJson.message || `Erreur HTTP ${putRes.status}`);
+    }
+    customIcons[slug] = "data:image/png;base64," + base64;
+    render();
+    setGhStatus(`✅ Image de « ${slug} » mise à jour sur GitHub.`);
+  } catch(err){
+    console.error(err);
+    setGhStatus(`❌ Échec : ${err.message}`);
+  }
+}
+
+async function loadCustomIcons(){
+  setGhStatus("Chargement des icônes personnalisées existantes...");
+  try{
+    const res = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/icons?ref=${encodeURIComponent(gh.branch)}`, {
+      headers: { "Authorization": `token ${gh.token}`, "Accept": "application/vnd.github+json" }
+    });
+    if(res.status === 404){ setGhStatus("Connecté — aucun dossier icons/ pour le moment (il sera créé à ta première modification)."); return; }
+    if(res.status === 401 || res.status === 403){ throw new Error("Token invalide ou droits insuffisants."); }
+    if(!res.ok) throw new Error(`Impossible de lister icons/ (HTTP ${res.status})`);
+    const files = await res.json();
+    let count = 0;
+    for(const f of files){
+      if(!f.name.endsWith(".png")) continue;
+      const slug = f.name.replace(/\.png$/,"");
+      try{
+        const fileRes = await fetch(f.url, {
+          headers: { "Authorization": `token ${gh.token}`, "Accept": "application/vnd.github.raw" }
+        });
+        if(fileRes.ok){
+          const blob = await fileRes.blob();
+          customIcons[slug] = URL.createObjectURL(blob);
+          count++;
+        }
+      } catch(e){ /* on ignore ce fichier et on continue */ }
+    }
+    setGhStatus(`Connecté — ${count} icône(s) personnalisée(s) chargée(s).`);
+    render();
+  } catch(err){
+    console.error(err);
+    setGhStatus(`❌ ${err.message}`);
+  }
+}
+
+document.getElementById('ghToggle').addEventListener('click', ()=>{
+  const form = document.getElementById('ghForm');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+});
+
+document.getElementById('ghConnectBtn').addEventListener('click', async ()=>{
+  const repoVal = document.getElementById('ghRepo').value.trim();
+  const parts = repoVal.split('/');
+  const token = document.getElementById('ghToken').value.trim();
+  if(parts.length !== 2 || !parts[0] || !parts[1] || !token){
+    setGhStatus("Renseigne le repo au format propriétaire/repo, et le token.");
+    return;
+  }
+  gh.owner = parts[0];
+  gh.repo = parts[1];
+  gh.branch = document.getElementById('ghBranch').value.trim() || "main";
+  gh.token = token;
+  gh.connected = true;
+  await loadCustomIcons();
+  render();
+});
+
+let items = DEFAULT_ITEMS.map((it,i)=>({...it, id:"i"+i, selected:false, custom:false}));
+let customCount = 0;
+let activeFilter = "all";
+
+const categoriesEl = document.getElementById('categories');
+const countDisplay = document.getElementById('countDisplay');
+const ptsDisplay = document.getElementById('ptsDisplay');
+const generateBtn = document.getElementById('generateBtn');
+
+function catIcon(cat){
+  const map = {
+    "Véhicules":"🚗",
+    "Mobilier urbain":"🚏",
+    "Commerces & services":"🛒",
+    "Panneaux & signalisation":"🚧",
+    "Nature & animaux":"🌳",
+    "Infrastructures & patrimoine":"🏛️",
+    "Mes ajouts":"⭐"
+  };
+  return map[cat] || "📌";
+}
+
+function render(){
+  const cats = [...new Set(items.map(i=>i.cat))];
+  categoriesEl.innerHTML = "";
+  cats.forEach(cat=>{
+    const catItems = items.filter(i=>i.cat===cat);
+    const section = document.createElement('div');
+    section.className = "category";
+    section.innerHTML = `<div class="category-head">${catIcon(cat)} ${cat}</div><div class="grid"></div>`;
+    const grid = section.querySelector('.grid');
+    catItems.forEach(item=>{
+      const card = document.createElement('div');
+      const isHidden = activeFilter !== "all" && String(item.rarity) !== activeFilter;
+      card.className = "card" + (item.selected?" selected":"") + (item.custom?" custom-card":"") + (isHidden?" hidden":"");
+      card.tabIndex = 0;
+      card.setAttribute('role','button');
+      card.setAttribute('aria-pressed', item.selected);
+      card.innerHTML = `
+        ${item.custom ? '<button class="remove-x" title="Supprimer">×</button>' : ''}
+        <span class="rarity-badge r${item.rarity}">+${POINTS[item.rarity]}</span>
+        <span class="check">✓</span>
+        <span class="emoji">${visual(item)}</span>
+        <span class="label">${item.label}</span>
+        ${gh.connected ? '<button class="edit-pencil" title="Changer l\u2019image">✏️</button><input type="file" accept="image/*" class="edit-file-input" style="display:none">' : ''}
+      `;
+      if(gh.connected){
+        const pencil = card.querySelector('.edit-pencil');
+        const fileInput = card.querySelector('.edit-file-input');
+        pencil.addEventListener('click', (e)=>{ e.stopPropagation(); fileInput.click(); });
+        fileInput.addEventListener('click', (e)=>e.stopPropagation());
+        fileInput.addEventListener('change', (e)=>{
+          e.stopPropagation();
+          const file = e.target.files[0];
+          if(file) uploadIcon(slugify(item.label), file);
+        });
+      }
+      card.addEventListener('click', (e)=>{
+        if(e.target.closest('.remove-x') || e.target.closest('.edit-pencil') || e.target.closest('.edit-file-input')){
+          if(e.target.closest('.remove-x')){
+            items = items.filter(i=>i.id!==item.id);
+            render();
+          }
+          return;
+        }
+        item.selected = !item.selected;
+        render();
+      });
+      card.addEventListener('keydown',(e)=>{
+        if(e.key==='Enter' || e.key===' '){ e.preventDefault(); card.click(); }
+      });
+      grid.appendChild(card);
+    });
+    categoriesEl.appendChild(section);
+  });
+  const selectedItems = items.filter(i=>i.selected);
+  countDisplay.textContent = selectedItems.length;
+  ptsDisplay.textContent = selectedItems.reduce((s,i)=>s+POINTS[i.rarity],0);
+  generateBtn.disabled = selectedItems.length < 4;
+}
+
+document.getElementById('filterBar').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.filter-btn');
+  if(!btn) return;
+  activeFilter = btn.dataset.filter;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+});
+
+document.getElementById('quickPickBtn').addEventListener('click', ()=>{
+  const target = parseInt(document.getElementById('targetCount').value,10) || 20;
+  items.forEach(i=>i.selected=false);
+  // proportion approx : 55% fréquents, 32% occasionnels, 13% rares
+  const wanted = {
+    1: Math.round(target*0.55),
+    2: Math.round(target*0.32),
+    3: Math.max(1, target - Math.round(target*0.55) - Math.round(target*0.32))
+  };
+  [1,2,3].forEach(r=>{
+    const pool = shuffle(items.filter(i=>i.rarity===r));
+    pool.slice(0, wanted[r]).forEach(i=>i.selected=true);
+  });
+  render();
+});
+
+document.getElementById('addBtn').addEventListener('click', ()=>{
+  const emojiInput = document.getElementById('customEmoji');
+  const labelInput = document.getElementById('customLabel');
+  const rarityInput = document.getElementById('customRarity');
+  const label = labelInput.value.trim();
+  if(!label) { labelInput.focus(); return; }
+  const emoji = emojiInput.value.trim() || "⭐";
+  const rarity = parseInt(rarityInput.value,10);
+  customCount++;
+  items.push({cat:"Mes ajouts", emoji, label, rarity, id:"custom"+customCount, selected:true, custom:true});
+  emojiInput.value = "";
+  labelInput.value = "";
+  render();
+  labelInput.focus();
+});
+
+document.getElementById('customLabel').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ document.getElementById('addBtn').click(); }
+});
+
+function clearAll(){ items.forEach(i=>i.selected=false); render(); }
+document.getElementById('clearBtn').addEventListener('click', clearAll);
+document.getElementById('clearBtn2').addEventListener('click', clearAll);
+
+function shuffle(arr){
+  arr = [...arr];
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+let currentSelection = [];
+
+function buildPreview(){
+  const perPage = parseInt(document.getElementById('perPage').value,10);
+  const pilot = document.getElementById('pilotName').value.trim();
+  const dest = document.getElementById('destination').value.trim();
+  const sheetsEl = document.getElementById('sheets');
+  sheetsEl.innerHTML = "";
+
+  const totalPts = currentSelection.reduce((s,i)=>s+POINTS[i.rarity],0);
+  const chunks = [];
+  for(let i=0;i<currentSelection.length;i+=perPage){
+    chunks.push(currentSelection.slice(i,i+perPage));
+  }
+  const totalPages = chunks.length;
+
+  chunks.forEach((chunk, idx)=>{
+    const sheet = document.createElement('div');
+    sheet.className = "sheet";
+    sheet.innerHTML = `
+      <div class="sheet-header">
+        <h2>🧭 Chasse au trésor de la route</h2>
+        <div class="fields">
+          <span>Copilote : <span class="line">${pilot || "&nbsp;"}</span></span>
+          <span>Destination : <span class="line">${dest || "&nbsp;"}</span></span>
+        </div>
+      </div>
+      <div class="sheet-grid">
+        ${chunk.map(it=>`
+          <div class="sheet-item">
+            <span class="pts">+${POINTS[it.rarity]}</span>
+            <span class="box"></span>
+            <span class="emoji">${visual(it)}</span>
+            <span>${it.label}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="sheet-footer">
+        <span>Page ${idx+1} / ${totalPages}</span>
+        <span>Score total possible sur la fiche complète : ${totalPts} pts</span>
+        <span>Bonne route ! 🚗💨</span>
+      </div>
+    `;
+    sheetsEl.appendChild(sheet);
+  });
+}
+
+document.getElementById('generateBtn').addEventListener('click', ()=>{
+  currentSelection = items.filter(i=>i.selected);
+  if(currentSelection.length < 4) return;
+  buildPreview();
+  document.getElementById('builder-view').style.display = 'none';
+  document.getElementById('preview-view').style.display = 'block';
+  document.getElementById('stickybar').style.display = 'none';
+  window.scrollTo(0,0);
+});
+
+document.getElementById('backBtn').addEventListener('click', ()=>{
+  document.getElementById('builder-view').style.display = 'block';
+  document.getElementById('preview-view').style.display = 'none';
+  document.getElementById('stickybar').style.display = 'flex';
+  window.scrollTo(0,0);
+});
+
+document.getElementById('shuffleBtn').addEventListener('click', ()=>{
+  currentSelection = shuffle(currentSelection);
+  buildPreview();
+});
+
+document.getElementById('printBtn').addEventListener('click', ()=>{
+  window.print();
+});
+
+render();
+</script>
+
+</body>
+</html>
