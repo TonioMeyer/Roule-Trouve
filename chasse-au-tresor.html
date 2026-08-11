@@ -342,13 +342,13 @@
 // rarity: 1 = fréquent (1 pt), 2 = occasionnel (3 pts), 3 = rare (5 pts)
 const DEFAULT_ITEMS = [
   // --- VÉHICULES ---
-  {cat:"Véhicules", emoji:"🔴🚗", label:"Voiture rouge", rarity:1},
-  {cat:"Véhicules", emoji:"🔵🚗", label:"Voiture bleue", rarity:1},
-  {cat:"Véhicules", emoji:"⚪🚗", label:"Voiture blanche", rarity:1},
-  {cat:"Véhicules", emoji:"⚫🚗", label:"Voiture noire", rarity:1},
-  {cat:"Véhicules", emoji:"🔘🚗", label:"Voiture grise", rarity:1},
-  {cat:"Véhicules", emoji:"🟡🚗", label:"Voiture jaune", rarity:2},
-  {cat:"Véhicules", emoji:"🟢🚗", label:"Voiture verte", rarity:2},
+  {cat:"Véhicules", emoji:"🚗", icon:"car_rouge", label:"Voiture rouge", rarity:1},
+  {cat:"Véhicules", emoji:"🚗", icon:"car_bleue", label:"Voiture bleue", rarity:1},
+  {cat:"Véhicules", emoji:"🚗", icon:"car_blanche", label:"Voiture blanche", rarity:1},
+  {cat:"Véhicules", emoji:"🚗", icon:"car_noire", label:"Voiture noire", rarity:1},
+  {cat:"Véhicules", emoji:"🚗", icon:"car_grise", label:"Voiture grise", rarity:1},
+  {cat:"Véhicules", emoji:"🚗", icon:"car_jaune", label:"Voiture jaune", rarity:2},
+  {cat:"Véhicules", emoji:"🚗", icon:"car_verte", label:"Voiture verte", rarity:2},
   {cat:"Véhicules", emoji:"🚚", label:"Camion", rarity:1},
   {cat:"Véhicules", emoji:"🛢️🚚", label:"Camion-citerne", rarity:3},
   {cat:"Véhicules", emoji:"🚐", label:"Camping-car", rarity:2},
@@ -497,6 +497,10 @@ function truckSil(fill, dx){
 function overtakeSVG(blackSil, redSil){
   return `<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="#ffffff" stroke="#c0392b" stroke-width="6"/>${blackSil("#111827",0)}${redSil("#c0392b",14)}</svg>`;
 }
+function carColorSVG(color, strokeColor){
+  const stroke = strokeColor || "#111827";
+  return `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="53" rx="25" ry="3" fill="#00000022"/><path d="M8,44 L8,36 C8,33 10,31 13,31 L19,31 L24,20 C25,18 27,17 29,17 L37,17 C39,17 41,18 42,20 L47,31 L53,31 C56,31 58,33 58,36 L58,44 Z" fill="${color}" stroke="${stroke}" stroke-width="2.5"/><path d="M25,29 L29,20 L37,20 L41,29 Z" fill="#bcd9e8" stroke="${stroke}" stroke-width="1.5"/><line x1="33" y1="20" x2="33" y2="29" stroke="${stroke}" stroke-width="1.5"/><circle cx="19" cy="44" r="6.5" fill="#1a1a1a" stroke="${stroke}" stroke-width="1"/><circle cx="19" cy="44" r="2.5" fill="#9aa0a6"/><circle cx="47" cy="44" r="6.5" fill="#1a1a1a" stroke="${stroke}" stroke-width="1"/><circle cx="47" cy="44" r="2.5" fill="#9aa0a6"/></svg>`;
+}
 const ICONS = {
   borne_incendie: `<svg viewBox="0 0 64 64"><rect x="21" y="46" width="22" height="7" rx="1.5" fill="#7a1f1f"/><rect x="18" y="42" width="28" height="6" rx="2" fill="#a83232"/><rect x="25" y="16" width="14" height="30" rx="4" fill="#c0392b" stroke="#7a1f1f" stroke-width="2.5"/><circle cx="32" cy="15" r="9" fill="#c0392b" stroke="#7a1f1f" stroke-width="2.5"/><rect x="28" y="6" width="8" height="7" rx="1.5" fill="#7a1f1f"/><circle cx="18" cy="27" r="4.5" fill="#a83232" stroke="#7a1f1f" stroke-width="1.5"/><circle cx="46" cy="27" r="4.5" fill="#a83232" stroke="#7a1f1f" stroke-width="1.5"/><rect x="26" y="33" width="12" height="3.5" fill="#7a1f1f"/></svg>`,
   poubelle_jaune: poubelleSVG("#F2C511"),
@@ -528,6 +532,13 @@ const ICONS = {
   dir_blanc: directionSVG("#ffffff", "#111827", "#111827"),
   interdiction_depasser: overtakeSVG(carSil, carSil),
   interdiction_depasser_pl: overtakeSVG(truckSil, carSil),
+  car_rouge: carColorSVG("#E63946"),
+  car_bleue: carColorSVG("#1D4ED8"),
+  car_blanche: carColorSVG("#FAFAFA"),
+  car_noire: carColorSVG("#1a1a1a", "#000000"),
+  car_grise: carColorSVG("#9AA0A6"),
+  car_jaune: carColorSVG("#F2C511"),
+  car_verte: carColorSVG("#2F8F46"),
 };
 // --- Connexion GitHub pour les images personnalisées ---
 let gh = {owner:"", repo:"", branch:"main", token:"", connected:false};
