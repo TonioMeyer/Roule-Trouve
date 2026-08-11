@@ -266,10 +266,15 @@
       <div class="gh-row">
         <input type="text" id="ghRepo" placeholder="propriétaire/repo">
         <input type="text" id="ghBranch" placeholder="branche" value="main">
-        <input type="password" id="ghToken" placeholder="Token GitHub (jamais sauvegardé)">
+        <input type="password" id="ghToken" placeholder="Token GitHub">
         <button id="ghConnectBtn">Se connecter</button>
+        <button id="ghForgetBtn" style="background:var(--stop-red); display:none;">Oublier le token</button>
       </div>
-      <p class="gh-note">Le token n'est gardé qu'en mémoire le temps de cette session — il faudra le recoller à chaque réouverture de la page. Utilise de préférence un token à portée limitée (Contents: Read/Write sur ce seul repo).</p>
+      <label style="display:flex; align-items:center; gap:6px; margin-top:8px; font-size:12.5px; cursor:pointer;">
+        <input type="checkbox" id="ghRemember" style="width:auto;">
+        Se souvenir de moi sur cet appareil (le token reste stocké dans ce navigateur — à éviter sur un ordinateur partagé)
+      </label>
+      <p class="gh-note">Sans cette case cochée, le token n'est gardé qu'en mémoire le temps de cette session. Utilise de préférence un token à portée limitée (Contents: Read/Write sur ce seul repo).</p>
       <span class="gh-status" id="ghStatus"></span>
     </div>
   </div>
@@ -659,7 +664,22 @@ document.getElementById('ghToggle').addEventListener('click', ()=>{
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
 });
 
-document.getElementById('ghConnectBtn').addEventListener('click', async ()=>{
+const GH_STORAGE_KEY = "roule-trouve-gh-config";
+
+function loadSavedGhConfig(){
+  try{
+    const raw = localStorage.getItem(GH_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
+}
+function saveGhConfig(cfg){
+  try{ localStorage.setItem(GH_STORAGE_KEY, JSON.stringify(cfg)); } catch(e){}
+}
+function forgetGhConfig(){
+  try{ localStorage.removeItem(GH_STORAGE_KEY); } catch(e){}
+}
+
+async function connectGh(){
   const repoVal = document.getElementById('ghRepo').value.trim();
   const parts = repoVal.split('/');
   const token = document.getElementById('ghToken').value.trim();
@@ -672,9 +692,41 @@ document.getElementById('ghConnectBtn').addEventListener('click', async ()=>{
   gh.branch = document.getElementById('ghBranch').value.trim() || "main";
   gh.token = token;
   gh.connected = true;
+
+  if(document.getElementById('ghRemember').checked){
+    saveGhConfig({owner: gh.owner, repo: gh.repo, branch: gh.branch, token: gh.token});
+  } else {
+    forgetGhConfig();
+  }
+  document.getElementById('ghForgetBtn').style.display = document.getElementById('ghRemember').checked ? 'inline-block' : 'none';
+
   await loadCustomIcons();
   render();
+}
+
+document.getElementById('ghConnectBtn').addEventListener('click', connectGh);
+
+document.getElementById('ghForgetBtn').addEventListener('click', ()=>{
+  forgetGhConfig();
+  document.getElementById('ghToken').value = "";
+  document.getElementById('ghRemember').checked = false;
+  document.getElementById('ghForgetBtn').style.display = 'none';
+  setGhStatus("Token oublié sur cet appareil.");
 });
+
+// Pré-remplissage et connexion automatique si un token a été sauvegardé sur cet appareil
+(function initGhFromStorage(){
+  const saved = loadSavedGhConfig();
+  if(saved && saved.owner && saved.repo && saved.token){
+    document.getElementById('ghRepo').value = `${saved.owner}/${saved.repo}`;
+    document.getElementById('ghBranch').value = saved.branch || "main";
+    document.getElementById('ghToken').value = saved.token;
+    document.getElementById('ghRemember').checked = true;
+    document.getElementById('ghForgetBtn').style.display = 'inline-block';
+    document.getElementById('ghForm').style.display = 'block';
+    connectGh();
+  }
+})();
 
 let items = DEFAULT_ITEMS.map((it,i)=>({...it, id:"i"+i, selected:false, custom:false}));
 let customCount = 0;
