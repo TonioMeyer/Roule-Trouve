@@ -7,7 +7,7 @@
 <meta name="description" content="Crée ta fiche de chasse au trésor pour les trajets en voiture, puis imprime-la.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Baloo+2:wght@500;600;700;800&family=Kalam:wght@400;700&family=Quicksand:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Oswald:wght@400;500;600&family=Quicksand:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    1. TOKENS COMMUNS
@@ -28,8 +28,9 @@
 /* --- 2.1 CARNET DE ROUTE (papier kraft) --- */
 [data-theme="paper"]{
   --bg:#F5EDD6;
-  --bg-img:radial-gradient(#E7DABA 1px, transparent 1px);
-  --bg-size:22px 22px;
+  /* papier réglé : fines lignes horizontales, pas de pointillés */
+  --bg-img:repeating-linear-gradient(to bottom, transparent 0 30px, rgba(150,131,92,.16) 30px 31px);
+  --bg-size:auto;
   --bg-attach:local;
   --ink:#213042;
   --ink-soft:#6d7a8b;
@@ -78,59 +79,56 @@
   --tape:1;
 }
 
-/* --- 2.2 BD / CARTOON --- */
-[data-theme="comic"]{
-  --bg:#FFF1CE;
-  --bg-img:
-    radial-gradient(#FFD66B 3.2px, transparent 3.3px),
-    radial-gradient(#FFD66B 3.2px, transparent 3.3px);
-  --bg-size:26px 26px;
-  --bg-pos:0 0, 13px 13px;
-  --bg-attach:local;
-  --ink:#15120E;
-  --ink-soft:#5f544a;
-  --accent:#E8412B;
-  --accent-dark:#b52c1a;
-  --accent-ink:#ffffff;
-  --accent2:#FFC800;
-  --accent2-dark:#d8a600;
-  --accent2-ink:#15120E;
-  --danger:#15120E;
-  --title:#E8412B;
-  --title-shadow:3px 3px 0 #15120E;
-  --title-spacing:1.6px;
-  --panel-bg:#FFFDF6;
-  --panel-border:3px solid #15120E;
-  --panel-radius:16px;
-  --panel-shadow:5px 5px 0 #15120E;
-  --card-bg:#FFFDF6;
-  --card-border:3px solid #15120E;
-  --card-radius:14px;
-  --card-shadow:4px 4px 0 #15120E;
-  --card-shadow-hover:7px 7px 0 #15120E;
+/* --- 2.2 RÉTRO VOYAGE (affiche vintage) --- */
+[data-theme="retro"]{
+  --bg:#F2E3CB;
+  --bg-img:linear-gradient(175deg,#F6EAD6 0%,#EFDCC0 55%,#E8D2B0 100%);
+  --bg-size:auto;
+  --bg-attach:fixed;
+  --ink:#3A2A22;
+  --ink-soft:#836B5A;
+  --accent:#B4552F;
+  --accent-dark:#8C3F1F;
+  --accent-ink:#FDF6EA;
+  --accent2:#DFA33A;
+  --accent2-dark:#C0862A;
+  --accent2-ink:#33231A;
+  --danger:#9B3125;
+  --title:#B4552F;
+  --title-shadow:none;
+  --title-spacing:2.4px;
+  --panel-bg:#FCF4E5;
+  --panel-border:1.5px solid #DCC29C;
+  --panel-radius:8px;
+  --panel-shadow:0 1px 0 #fff inset, 0 8px 22px -16px rgba(58,42,34,.6);
+  --card-bg:#FCF4E5;
+  --card-border:1.5px solid #DCC29C;
+  --card-radius:8px;
+  --card-shadow:0 1px 0 #fff inset;
+  --card-shadow-hover:0 12px 24px -14px rgba(58,42,34,.7);
   --card-lift:-3px;
   --card-tilt:0;
-  --sel-bg:#FFC800;
-  --sel-border:#15120E;
-  --sel-ink:#15120E;
-  --chip-bg:#FFFDF6;
+  --sel-bg:#EFC98A;
+  --sel-border:#B4552F;
+  --sel-ink:#3A2A22;
+  --chip-bg:#FCF4E5;
   --chip-ink:var(--ink);
-  --chip-border:2.5px solid #15120E;
-  --chip-radius:999px;
-  --chip-on-bg:#E8412B;
-  --chip-on-ink:#fff;
-  --field-bg:#fff;
-  --field-border:2.5px solid #15120E;
-  --dock-bg:#15120E;
-  --dock-ink:#ffffff;
-  --dock-border:3px solid #15120E;
-  --dock-radius:18px;
-  --dock-shadow:0 10px 0 -2px rgba(21,18,14,.35);
-  --font-display:'Bangers',system-ui,cursive;
-  --font-body:'Baloo 2',system-ui,sans-serif;
-  --display-weight:400;
+  --chip-border:1.5px solid #C9A87E;
+  --chip-radius:6px;
+  --chip-on-bg:#B4552F;
+  --chip-on-ink:#FDF6EA;
+  --field-bg:#FFFBF2;
+  --field-border:1.5px solid #D3B591;
+  --dock-bg:#3A2A22;
+  --dock-ink:#F6EAD6;
+  --dock-border:none;
+  --dock-radius:10px;
+  --dock-shadow:0 16px 34px -16px rgba(58,42,34,.75);
+  --font-display:'Oswald',system-ui,sans-serif;
+  --font-body:'Quicksand',system-ui,sans-serif;
+  --display-weight:500;
   --display-transform:uppercase;
-  --road-color:#15120E;
+  --road-color:#C9A87E;
   --tape:0;
 }
 
@@ -446,8 +444,7 @@ button,input,select{font-family:inherit;}
 @media (max-width:560px){.trip-grid{grid-template-columns:1fr;}}
 .trip-grid .field input{font-family:var(--font-display);font-size:17px;}
 
-/* barre d'outils : recherche + filtres */
-.deck{display:grid;gap:14px;}
+/* recherche */
 .search-wrap{position:relative;}
 .search-wrap .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:.6;pointer-events:none;}
 .search-wrap input{
@@ -462,26 +459,84 @@ button,input,select{font-family:inherit;}
 .search-wrap.has-value .clear-s{display:block;}
 .search-wrap .clear-s:hover{background:var(--danger);color:#fff;}
 
-.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-.chip{
-  background:var(--chip-bg);color:var(--chip-ink);border:var(--chip-border);
-  border-radius:var(--chip-radius);padding:7px 14px;font-size:12.5px;font-weight:700;
-  cursor:pointer;display:inline-flex;align-items:center;gap:6px;
-  transition:background var(--tr), color var(--tr), border-color var(--tr), transform var(--tr);
-}
-.chip:hover{transform:translateY(-1px);}
-.chip[aria-pressed="true"],.chip.on{background:var(--chip-on-bg);color:var(--chip-on-ink);border-color:var(--chip-on-bg);}
-.chip .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
 .dot.freq{background:var(--freq);}
 .dot.occ{background:var(--occ);}
 .dot.rare{background:var(--rare);}
-.spacer{flex:1;}
 
-.pick-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--ink-soft);font-weight:600;}
-.pick-row input[type=number]{
-  width:66px;padding:8px;text-align:center;border-radius:10px;
+/* ============================================================
+   8bis. BANDEAU LATÉRAL DE FILTRES
+   ============================================================ */
+.shell{display:grid;grid-template-columns:264px minmax(0,1fr);gap:22px;align-items:start;}
+.side{position:sticky;top:14px;}
+.side-inner{
+  background:var(--panel-bg);border:var(--panel-border);
+  border-radius:var(--panel-radius);box-shadow:var(--panel-shadow);
+  backdrop-filter:blur(var(--blur,0px));
+  padding:14px;display:grid;gap:15px;
+  max-height:calc(100vh - 28px);overflow:auto;
+}
+.side-inner > *,.side-block > *,.filter-list > *{min-width:0;}
+.side-block{display:grid;gap:7px;min-width:0;}
+.side-block + .side-block{border-top:1px solid rgba(127,127,127,.2);padding-top:14px;}
+.side-title{
+  margin:0;font-size:11px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;
+  color:var(--ink-soft);display:flex;align-items:center;gap:8px;
+}
+.side-reset{
+  margin-left:auto;border:none;background:transparent;color:var(--accent);
+  font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0;text-transform:none;
+  padding:2px 4px;border-radius:5px;
+}
+.side-reset:hover{background:rgba(127,127,127,.15);}
+.side-reset[hidden]{display:none;}
+
+.filter-list{display:grid;gap:2px;min-width:0;}
+.filter-row{
+  display:flex;align-items:center;gap:8px;width:100%;min-width:0;
+  padding:7px 8px;border-radius:8px;border:1px solid transparent;
+  background:transparent;color:var(--ink);
+  font-size:13px;font-weight:600;text-align:left;cursor:pointer;
+  transition:background var(--tr), border-color var(--tr);
+}
+.filter-row:hover{background:rgba(127,127,127,.13);}
+.filter-row[aria-pressed="true"]{background:rgba(127,127,127,.13);border-color:var(--accent);}
+.filter-row .box{
+  width:16px;height:16px;flex:none;border-radius:4px;
+  border:1.8px solid var(--road-color);
+  display:grid;place-items:center;font-size:10px;color:transparent;line-height:1;
+}
+.filter-row[aria-pressed="true"] .box{background:var(--accent);border-color:var(--accent);color:#fff;}
+.filter-row .ico{flex:none;font-size:14px;width:17px;text-align:center;}
+.filter-row .fname{flex:1;min-width:0;white-space:normal;line-height:1.25;}
+.filter-row .fcount{font-family:var(--font-mono);font-size:10px;color:var(--ink-soft);flex:none;}
+.filter-row.wide{font-size:12.5px;}
+
+.side .search-wrap input{padding:9px 32px 9px 31px;font-size:13px;border-radius:10px;}
+.side .search-wrap .ico{left:10px;font-size:13px;}
+.side .search-wrap .clear-s{right:5px;width:22px;height:22px;font-size:12px;}
+
+.side-pick{display:flex;gap:6px;align-items:center;min-width:0;}
+.side-pick input[type=number]{
+  flex:1;min-width:0;padding:8px 6px;text-align:center;border-radius:9px;
   border:var(--field-border);background:var(--field-bg);color:var(--ink);
-  font-family:var(--font-mono);font-size:14px;font-weight:700;
+  font-family:var(--font-mono);font-size:13px;font-weight:700;
+}
+.side-pick .btn{padding:8px 12px;font-size:13px;flex:none;}
+.side-block .btn.full{width:100%;justify-content:center;}
+
+.side-toggle{display:none;}
+.side.closed{display:none;}
+@media (min-width:901px){.side.closed{display:block;}}
+/* sur petit écran, on laisse la place aux boutons flottants */
+@media (max-width:660px){
+  .wrap{padding-top:64px;}
+}
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr);}
+  .side{position:static;}
+  .side-inner{max-height:none;}
+  .side-toggle{display:inline-flex;margin-bottom:14px;}
 }
 
 /* ============================================================
@@ -576,7 +631,7 @@ button,input,select{font-family:inherit;}
   opacity:calc(var(--tape) * .9);pointer-events:none;
   display:var(--tape-display,block);
 }
-[data-theme="comic"] .card::after,[data-theme="modern"] .card::after,[data-theme="night"] .card::after{display:none;}
+[data-theme="retro"] .card::after,[data-theme="modern"] .card::after,[data-theme="night"] .card::after{display:none;}
 [data-theme="paper"] .card:nth-child(3n){transform:rotate(-.5deg);}
 [data-theme="paper"] .card:nth-child(4n){transform:rotate(.6deg);}
 [data-theme="paper"] .card:hover{transform:translateY(var(--card-lift)) rotate(0deg);}
@@ -751,9 +806,9 @@ button,input,select{font-family:inherit;}
       <span class="swatch"><i style="background:#F5EDD6"></i><i style="background:#2F6E4F"></i><i style="background:#F0AC3D"></i></span>
       <span>📜 Carnet de route</span><span class="tick">✓</span>
     </button>
-    <button type="button" class="theme-opt" role="radio" aria-checked="false" data-theme-val="comic">
-      <span class="swatch"><i style="background:#FFF1CE"></i><i style="background:#E8412B"></i><i style="background:#FFC800"></i></span>
-      <span>💥 BD cartoon</span><span class="tick">✓</span>
+    <button type="button" class="theme-opt" role="radio" aria-checked="false" data-theme-val="retro">
+      <span class="swatch"><i style="background:#F2E3CB"></i><i style="background:#B4552F"></i><i style="background:#DFA33A"></i></span>
+      <span>🧳 Rétro voyage</span><span class="tick">✓</span>
     </button>
     <button type="button" class="theme-opt" role="radio" aria-checked="false" data-theme-val="modern">
       <span class="swatch"><i style="background:#F3F6FB"></i><i style="background:#4F46E5"></i><i style="background:#F59E0B"></i></span>
@@ -824,71 +879,94 @@ button,input,select{font-family:inherit;}
 
   <div class="road"><span class="car">🚙</span></div>
 
-  <section class="panel">
-    <p class="panel-title">🎫 L'équipage</p>
-    <div class="trip-grid">
-      <div class="field">
-        <label for="pilotName">Nom du copilote</label>
-        <input type="text" id="pilotName" placeholder="ex : Léa">
-      </div>
-      <div class="field">
-        <label for="destination">Destination</label>
-        <input type="text" id="destination" placeholder="ex : la mer !">
-      </div>
-    </div>
-  </section>
+  <button type="button" class="btn btn-soft side-toggle no-print" id="sideToggle" aria-expanded="false" aria-controls="side">☰ Filtres &amp; recherche</button>
 
-  <section class="panel">
-    <p class="panel-title">🎯 Composer la fiche</p>
-    <div class="deck">
-      <div class="search-wrap" id="searchWrap">
-        <span class="ico">🔎</span>
-        <input type="search" id="searchInput" placeholder="Chercher un élément (vache, radar, tunnel…)" autocomplete="off">
-        <button type="button" class="clear-s" id="clearSearch" aria-label="Effacer la recherche">✕</button>
+  <div class="shell">
+
+    <!-- ===== bandeau de filtres ===== -->
+    <aside class="side closed no-print" id="side" aria-label="Filtres">
+      <div class="side-inner">
+
+        <div class="side-block">
+          <div class="search-wrap" id="searchWrap">
+            <span class="ico">🔎</span>
+            <input type="search" id="searchInput" placeholder="Chercher…" autocomplete="off" aria-label="Chercher un élément">
+            <button type="button" class="clear-s" id="clearSearch" aria-label="Effacer la recherche">✕</button>
+          </div>
+        </div>
+
+        <div class="side-block">
+          <p class="side-title">Rareté <button type="button" class="side-reset" id="resetRarity" hidden>tout</button></p>
+          <div class="filter-list" id="rarityList"></div>
+        </div>
+
+        <div class="side-block">
+          <p class="side-title">Thèmes <button type="button" class="side-reset" id="resetCats" hidden>tout</button></p>
+          <div class="filter-list" id="catList"></div>
+        </div>
+
+        <div class="side-block">
+          <button type="button" class="filter-row wide" id="onlySelBtn" aria-pressed="false">
+            <span class="box">✓</span><span class="fname">Ma sélection seulement</span>
+          </button>
+        </div>
+
+        <div class="side-block">
+          <p class="side-title">Tirage rapide</p>
+          <div class="side-pick">
+            <input type="number" id="targetCount" value="20" min="6" max="90" aria-label="Nombre d'éléments visé">
+            <button type="button" class="btn btn-accent" id="quickPickBtn" title="Sélection équilibrée">🎲</button>
+          </div>
+          <button type="button" class="btn btn-danger btn-sm full" id="clearBtn2">Tout désélectionner</button>
+          <button type="button" class="btn btn-soft btn-sm full" id="collapseAllBtn">⇕ Replier / déplier</button>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ===== colonne principale ===== -->
+    <main class="main">
+      <section class="panel">
+        <p class="panel-title">🎫 L'équipage</p>
+        <div class="trip-grid">
+          <div class="field">
+            <label for="pilotName">Nom du copilote</label>
+            <input type="text" id="pilotName" placeholder="ex : Léa">
+          </div>
+          <div class="field">
+            <label for="destination">Destination</label>
+            <input type="text" id="destination" placeholder="ex : la mer !">
+          </div>
+        </div>
+      </section>
+
+      <div id="categories"></div>
+
+      <div class="no-result" id="noResult" style="display:none;">
+        <span class="big">🤷</span>
+        Aucun élément ne correspond aux filtres.
+        <div style="margin-top:14px;">
+          <button type="button" class="btn btn-soft btn-sm" id="resetAllBtn">Réinitialiser les filtres</button>
+        </div>
       </div>
 
-      <div class="chips" id="filterBar">
-        <button type="button" class="chip on" data-filter="all" aria-pressed="true">Tous</button>
-        <button type="button" class="chip" data-filter="1" aria-pressed="false"><span class="dot freq"></span>Fréquents · 1&nbsp;pt</button>
-        <button type="button" class="chip" data-filter="2" aria-pressed="false"><span class="dot occ"></span>Occasionnels · 3&nbsp;pts</button>
-        <button type="button" class="chip" data-filter="3" aria-pressed="false"><span class="dot rare"></span>Rares · 5&nbsp;pts</button>
-        <span class="spacer"></span>
-        <button type="button" class="chip" id="onlySelBtn" aria-pressed="false">✅ Ma sélection</button>
-      </div>
+      <section class="panel" style="margin-top:26px;">
+        <p class="panel-title">➕ Ajouter un élément à toi</p>
+        <div class="add-form">
+          <input type="text" id="customEmoji" placeholder="🔎" maxlength="4" aria-label="Emoji">
+          <input type="text" id="customLabel" placeholder="ex : Camion de déménagement" aria-label="Nom de l'élément">
+          <select id="customRarity" aria-label="Rareté">
+            <option value="1">🟢 Fréquent · 1 pt</option>
+            <option value="2" selected>🟠 Occasionnel · 3 pts</option>
+            <option value="3">🔴 Rare · 5 pts</option>
+          </select>
+          <button type="button" class="btn btn-accent" id="addBtn">Ajouter</button>
+          <span class="hint">Astuce : colle un emoji (🚀, 🐘, 🎪…) dans la première case, ou laisse-la vide.</span>
+        </div>
+      </section>
+    </main>
 
-      <div class="pick-row">
-        <span>Sélection équilibrée pour environ</span>
-        <input type="number" id="targetCount" value="20" min="6" max="90">
-        <span>éléments</span>
-        <button type="button" class="btn btn-accent btn-sm" id="quickPickBtn">🎲 Choisir pour moi</button>
-        <button type="button" class="btn btn-danger btn-sm" id="clearBtn2">Tout désélectionner</button>
-        <span class="spacer"></span>
-        <button type="button" class="btn btn-soft btn-sm" id="collapseAllBtn">⇕ Replier / déplier</button>
-      </div>
-    </div>
-  </section>
-
-  <div id="categories"></div>
-
-  <div class="no-result" id="noResult" style="display:none;">
-    <span class="big">🤷</span>
-    Aucun élément ne correspond à cette recherche.
   </div>
-
-  <section class="panel" style="margin-top:26px;">
-    <p class="panel-title">➕ Ajouter un élément à toi</p>
-    <div class="add-form">
-      <input type="text" id="customEmoji" placeholder="🔎" maxlength="4" aria-label="Emoji">
-      <input type="text" id="customLabel" placeholder="ex : Camion de déménagement" aria-label="Nom de l'élément">
-      <select id="customRarity" aria-label="Rareté">
-        <option value="1">🟢 Fréquent · 1 pt</option>
-        <option value="2" selected>🟠 Occasionnel · 3 pts</option>
-        <option value="3">🔴 Rare · 5 pts</option>
-      </select>
-      <button type="button" class="btn btn-accent" id="addBtn">Ajouter</button>
-      <span class="hint">Astuce : colle un emoji (🚀, 🐘, 🎪…) dans la première case, ou laisse-la vide.</span>
-    </div>
-  </section>
 </div>
 
 <!-- ============ VUE APERÇU ============ -->
@@ -1153,7 +1231,7 @@ function toast(msg){
    B. THÈMES
    ============================================================ */
 const THEME_KEY = "roule-trouve-theme";
-const VALID_THEMES = ["paper","comic","modern","night"];
+const VALID_THEMES = ["paper","retro","modern","night"];
 
 function applyTheme(name, save){
   if(!VALID_THEMES.includes(name)) name = "paper";
@@ -1390,7 +1468,8 @@ document.getElementById('ghForgetBtn').addEventListener('click', ()=>{
    ============================================================ */
 let items = DEFAULT_ITEMS.map((it,i)=>({...it, id:"i"+i, selected:false, custom:false}));
 let customCount = 0;
-let activeFilter = "all";
+const activeRarities = new Set();   // vide = toutes les raretés
+const activeCats = new Set();       // vide = tous les thèmes
 let searchQuery = "";
 let onlySelected = false;
 const collapsed = new Set();
@@ -1454,13 +1533,51 @@ function catIcon(cat){
 }
 
 function isVisible(item){
-  if(activeFilter !== "all" && String(item.rarity) !== activeFilter) return false;
+  if(activeRarities.size && !activeRarities.has(item.rarity)) return false;
+  if(activeCats.size && !activeCats.has(item.cat)) return false;
   if(onlySelected && !item.selected) return false;
   if(searchQuery && !normalize(item.label).includes(searchQuery)) return false;
   return true;
 }
 
+/* --- bandeau latéral : listes de filtres --- */
+const RARITIES = [
+  {v:1, cls:"freq", name:"Fréquents",    pts:"1 pt"},
+  {v:2, cls:"occ",  name:"Occasionnels", pts:"3 pts"},
+  {v:3, cls:"rare", name:"Rares",        pts:"5 pts"}
+];
+
+function renderSidebar(){
+  const rl = document.getElementById('rarityList');
+  rl.innerHTML = RARITIES.map(r=>{
+    const tot = items.filter(i=>i.rarity===r.v).length;
+    const sel = items.filter(i=>i.rarity===r.v && i.selected).length;
+    return `<button type="button" class="filter-row" data-rarity="${r.v}" aria-pressed="${activeRarities.has(r.v)}" title="${r.pts}">
+      <span class="box">✓</span>
+      <span class="ico"><span class="dot ${r.cls}"></span></span>
+      <span class="fname">${r.name}</span>
+      <span class="fcount">${sel}/${tot}</span>
+    </button>`;
+  }).join('');
+
+  const cl = document.getElementById('catList');
+  cl.innerHTML = [...new Set(items.map(i=>i.cat))].map(c=>{
+    const tot = items.filter(i=>i.cat===c).length;
+    const sel = items.filter(i=>i.cat===c && i.selected).length;
+    return `<button type="button" class="filter-row" data-cat="${esc(c)}" aria-pressed="${activeCats.has(c)}">
+      <span class="box">✓</span>
+      <span class="ico">${catIcon(c)}</span>
+      <span class="fname">${esc(c)}</span>
+      <span class="fcount">${sel}/${tot}</span>
+    </button>`;
+  }).join('');
+
+  document.getElementById('resetRarity').hidden = activeRarities.size === 0;
+  document.getElementById('resetCats').hidden   = activeCats.size === 0;
+}
+
 function render(){
+  renderSidebar();
   const cats = [...new Set(items.map(i=>i.cat))];
   categoriesEl.innerHTML = "";
   let totalVisible = 0;
@@ -1557,23 +1674,47 @@ function render(){
 /* ============================================================
    G. INTERACTIONS
    ============================================================ */
-document.getElementById('filterBar').addEventListener('click', (e)=>{
-  const btn = e.target.closest('.chip[data-filter]');
+document.getElementById('rarityList').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.filter-row');
   if(!btn) return;
-  activeFilter = btn.dataset.filter;
-  document.querySelectorAll('.chip[data-filter]').forEach(b=>{
-    const on = b === btn;
-    b.classList.toggle('on', on);
-    b.setAttribute('aria-pressed', String(on));
-  });
+  const v = parseInt(btn.dataset.rarity,10);
+  if(activeRarities.has(v)) activeRarities.delete(v); else activeRarities.add(v);
   render();
 });
 
+document.getElementById('catList').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.filter-row');
+  if(!btn) return;
+  const c = btn.dataset.cat;
+  if(activeCats.has(c)) activeCats.delete(c); else activeCats.add(c);
+  render();
+});
+
+document.getElementById('resetRarity').addEventListener('click', ()=>{ activeRarities.clear(); render(); });
+document.getElementById('resetCats').addEventListener('click', ()=>{ activeCats.clear(); render(); });
+
 const onlySelBtn = document.getElementById('onlySelBtn');
+function syncOnlySel(){ onlySelBtn.setAttribute('aria-pressed', String(onlySelected)); }
 onlySelBtn.addEventListener('click', ()=>{
   onlySelected = !onlySelected;
-  onlySelBtn.classList.toggle('on', onlySelected);
-  onlySelBtn.setAttribute('aria-pressed', String(onlySelected));
+  syncOnlySel();
+  render();
+});
+
+/* bandeau repliable sur mobile */
+const sideEl = document.getElementById('side');
+const sideToggle = document.getElementById('sideToggle');
+sideToggle.addEventListener('click', ()=>{
+  const open = !sideEl.classList.toggle('closed');
+  sideToggle.setAttribute('aria-expanded', String(open));
+});
+
+document.getElementById('resetAllBtn').addEventListener('click', ()=>{
+  activeRarities.clear();
+  activeCats.clear();
+  onlySelected = false; syncOnlySel();
+  searchInput.value = ""; searchQuery = "";
+  searchWrap.classList.remove('has-value');
   render();
 });
 
