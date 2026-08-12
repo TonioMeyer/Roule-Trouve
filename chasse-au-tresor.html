@@ -1,348 +1,923 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="paper">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chasse au trésor de la route</title>
+<meta name="description" content="Crée ta fiche de chasse au trésor pour les trajets en voiture, puis imprime-la.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Quicksand:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Baloo+2:wght@500;600;700;800&family=Kalam:wght@400;700&family=Quicksand:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --paper:#F6EFD9;
-    --paper-dark:#EFE4C4;
-    --ink:#213042;
-    --ink-soft:#5b6b7d;
-    --route-green:#2F6E4F;
-    --route-green-dark:#204d38;
-    --highway-yellow:#F0AC3D;
-    --highway-yellow-dark:#c98a25;
-    --stop-red:#B23A2E;
-    --line-dash:#c9bfa0;
-    --card-bg:#fffdf6;
-    --radius:14px;
-    --freq:#3f8f5c;
-    --occ:#d98a2b;
-    --rare:#c0392b;
-  }
+/* ============================================================
+   1. TOKENS COMMUNS
+   ============================================================ */
+:root{
+  --freq:#2F8F5B;
+  --occ:#E08A1E;
+  --rare:#C0392B;
+  --font-mono:'Space Mono',ui-monospace,monospace;
+  --tr:.18s cubic-bezier(.4,0,.2,1);
+  --maxw:1080px;
+}
 
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Quicksand',sans-serif;
-    -webkit-font-smoothing:antialiased;
-    background-image: radial-gradient(var(--paper-dark) 1px, transparent 1px);
-    background-size: 22px 22px;
-  }
+/* ============================================================
+   2. THÈMES
+   ============================================================ */
 
-  h1,h2,h3, .handwritten{font-family:'Kalam',cursive;}
-  button{font-family:inherit;}
+/* --- 2.1 CARNET DE ROUTE (papier kraft) --- */
+[data-theme="paper"]{
+  --bg:#F5EDD6;
+  --bg-img:radial-gradient(#E7DABA 1px, transparent 1px);
+  --bg-size:22px 22px;
+  --bg-attach:local;
+  --ink:#213042;
+  --ink-soft:#6d7a8b;
+  --accent:#2F6E4F;
+  --accent-dark:#1e4a34;
+  --accent-ink:#ffffff;
+  --accent2:#F0AC3D;
+  --accent2-dark:#c98a25;
+  --accent2-ink:#3a2a0d;
+  --danger:#B23A2E;
+  --title:#1e4a34;
+  --title-shadow:none;
+  --title-spacing:.3px;
+  --panel-bg:#FFFCF2;
+  --panel-border:2px dashed #cfc3a2;
+  --panel-radius:16px;
+  --panel-shadow:0 2px 0 rgba(33,48,66,.05);
+  --card-bg:#FFFCF2;
+  --card-border:2px dashed #cfc3a2;
+  --card-radius:14px;
+  --card-shadow:0 1px 0 rgba(33,48,66,.05);
+  --card-shadow-hover:0 10px 20px -8px rgba(33,48,66,.35);
+  --card-lift:-3px;
+  --card-tilt:1;
+  --sel-bg:#F7CF86;
+  --sel-border:#c98a25;
+  --sel-ink:#3a2a0d;
+  --chip-bg:#FFFCF2;
+  --chip-ink:var(--ink);
+  --chip-border:1.5px solid #213042;
+  --chip-radius:999px;
+  --chip-on-bg:#213042;
+  --chip-on-ink:#fff;
+  --field-bg:#fff;
+  --field-border:1px solid #d8cdae;
+  --dock-bg:#213042;
+  --dock-ink:#ffffff;
+  --dock-border:none;
+  --dock-radius:999px;
+  --dock-shadow:0 12px 30px -10px rgba(33,48,66,.6);
+  --font-display:'Kalam',cursive;
+  --font-body:'Quicksand',system-ui,sans-serif;
+  --display-weight:700;
+  --display-transform:none;
+  --road-color:#c9bfa0;
+  --tape:1;
+}
 
-  .wrap{max-width:1020px;margin:0 auto;padding:28px 20px 150px;}
+/* --- 2.2 BD / CARTOON --- */
+[data-theme="comic"]{
+  --bg:#FFF1CE;
+  --bg-img:
+    radial-gradient(#FFD66B 3.2px, transparent 3.3px),
+    radial-gradient(#FFD66B 3.2px, transparent 3.3px);
+  --bg-size:26px 26px;
+  --bg-pos:0 0, 13px 13px;
+  --bg-attach:local;
+  --ink:#15120E;
+  --ink-soft:#5f544a;
+  --accent:#E8412B;
+  --accent-dark:#b52c1a;
+  --accent-ink:#ffffff;
+  --accent2:#FFC800;
+  --accent2-dark:#d8a600;
+  --accent2-ink:#15120E;
+  --danger:#15120E;
+  --title:#E8412B;
+  --title-shadow:3px 3px 0 #15120E;
+  --title-spacing:1.6px;
+  --panel-bg:#FFFDF6;
+  --panel-border:3px solid #15120E;
+  --panel-radius:16px;
+  --panel-shadow:5px 5px 0 #15120E;
+  --card-bg:#FFFDF6;
+  --card-border:3px solid #15120E;
+  --card-radius:14px;
+  --card-shadow:4px 4px 0 #15120E;
+  --card-shadow-hover:7px 7px 0 #15120E;
+  --card-lift:-3px;
+  --card-tilt:0;
+  --sel-bg:#FFC800;
+  --sel-border:#15120E;
+  --sel-ink:#15120E;
+  --chip-bg:#FFFDF6;
+  --chip-ink:var(--ink);
+  --chip-border:2.5px solid #15120E;
+  --chip-radius:999px;
+  --chip-on-bg:#E8412B;
+  --chip-on-ink:#fff;
+  --field-bg:#fff;
+  --field-border:2.5px solid #15120E;
+  --dock-bg:#15120E;
+  --dock-ink:#ffffff;
+  --dock-border:3px solid #15120E;
+  --dock-radius:18px;
+  --dock-shadow:0 10px 0 -2px rgba(21,18,14,.35);
+  --font-display:'Bangers',system-ui,cursive;
+  --font-body:'Baloo 2',system-ui,sans-serif;
+  --display-weight:400;
+  --display-transform:uppercase;
+  --road-color:#15120E;
+  --tape:0;
+}
 
-  header.top{text-align:center;margin-bottom:8px;}
-  header.top h1{
-    font-size:clamp(30px,5vw,46px);
-    font-weight:700;
-    color:var(--route-green-dark);
-    margin:0 0 4px;
-    letter-spacing:0.5px;
-  }
-  header.top p.sub{margin:0;color:var(--ink-soft);font-size:15px;}
+/* --- 2.3 APP MODERNE (clair) --- */
+[data-theme="modern"]{
+  --bg:#F3F6FB;
+  --bg-img:
+    radial-gradient(1100px 480px at 8% -12%, rgba(99,102,241,.20), transparent 70%),
+    radial-gradient(900px 420px at 95% -4%, rgba(236,72,153,.14), transparent 70%),
+    radial-gradient(700px 500px at 50% 110%, rgba(16,185,129,.12), transparent 70%);
+  --bg-size:auto;
+  --bg-attach:fixed;
+  --ink:#0F172A;
+  --ink-soft:#65718A;
+  --accent:#4F46E5;
+  --accent-dark:#3B32C9;
+  --accent-ink:#ffffff;
+  --accent2:#F59E0B;
+  --accent2-dark:#D9860A;
+  --accent2-ink:#2A1B00;
+  --danger:#E1483C;
+  --title:#0F172A;
+  --title-shadow:none;
+  --title-spacing:-.8px;
+  --panel-bg:rgba(255,255,255,.78);
+  --panel-border:1px solid rgba(15,23,42,.08);
+  --panel-radius:22px;
+  --panel-shadow:0 1px 2px rgba(15,23,42,.05), 0 10px 30px -18px rgba(15,23,42,.35);
+  --card-bg:rgba(255,255,255,.82);
+  --card-border:1px solid rgba(15,23,42,.08);
+  --card-radius:20px;
+  --card-shadow:0 1px 2px rgba(15,23,42,.05);
+  --card-shadow-hover:0 18px 34px -18px rgba(15,23,42,.45);
+  --card-lift:-4px;
+  --card-tilt:0;
+  --sel-bg:linear-gradient(160deg,#EEF0FF,#E0E3FF);
+  --sel-border:#4F46E5;
+  --sel-ink:#25207A;
+  --chip-bg:rgba(255,255,255,.75);
+  --chip-ink:var(--ink);
+  --chip-border:1px solid rgba(15,23,42,.12);
+  --chip-radius:12px;
+  --chip-on-bg:#4F46E5;
+  --chip-on-ink:#fff;
+  --field-bg:#fff;
+  --field-border:1px solid rgba(15,23,42,.14);
+  --dock-bg:rgba(255,255,255,.82);
+  --dock-ink:var(--ink);
+  --dock-border:1px solid rgba(15,23,42,.08);
+  --dock-radius:22px;
+  --dock-shadow:0 20px 44px -22px rgba(15,23,42,.55);
+  --font-display:'Quicksand',system-ui,sans-serif;
+  --font-body:'Quicksand',system-ui,sans-serif;
+  --display-weight:700;
+  --display-transform:none;
+  --road-color:rgba(15,23,42,.18);
+  --tape:0;
+  --blur:14px;
+}
 
-  .road-divider{position:relative;height:26px;margin:18px 0 22px;overflow:visible;}
-  .road-divider::before{
-    content:"";position:absolute;top:50%;left:0;right:0;height:4px;
-    transform:translateY(-50%);
-    background-image: repeating-linear-gradient(90deg, var(--line-dash) 0 22px, transparent 22px 40px);
-    border-radius:2px;
-  }
-  .road-divider .car{position:absolute;top:50%;transform:translate(-50%,-65%);font-size:22px;animation: drive 5s linear infinite;}
-  @media (prefers-reduced-motion: reduce){.road-divider .car{animation:none; left:50% !important;}}
-  @keyframes drive{
-    0%{left:2%;} 50%{left:96%;}
-    50.01%{left:96%; transform:translate(-50%,-65%) scaleX(-1);}
-    99.99%{left:2%; transform:translate(-50%,-65%) scaleX(-1);}
-    100%{left:2%; transform:translate(-50%,-65%) scaleX(1);}
-  }
+/* --- 2.4 NUIT (moderne sombre) --- */
+[data-theme="night"]{
+  --bg:#080C17;
+  --bg-img:
+    radial-gradient(1000px 460px at 10% -12%, rgba(99,102,241,.30), transparent 70%),
+    radial-gradient(820px 420px at 92% 0%, rgba(14,165,233,.22), transparent 70%),
+    radial-gradient(700px 460px at 50% 112%, rgba(217,70,239,.16), transparent 70%);
+  --bg-size:auto;
+  --bg-attach:fixed;
+  --ink:#E7EEFA;
+  --ink-soft:#8E9FBA;
+  --accent:#6366F1;
+  --accent-dark:#4F46E5;
+  --accent-ink:#ffffff;
+  --accent2:#FBBF24;
+  --accent2-dark:#E3A80F;
+  --accent2-ink:#241900;
+  --danger:#F0655A;
+  --title:#F4F8FF;
+  --title-shadow:0 0 26px rgba(129,140,248,.45);
+  --title-spacing:-.8px;
+  --panel-bg:rgba(20,28,45,.72);
+  --panel-border:1px solid rgba(255,255,255,.09);
+  --panel-radius:22px;
+  --panel-shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 18px 40px -24px #000;
+  --card-bg:rgba(22,31,50,.72);
+  --card-border:1px solid rgba(255,255,255,.09);
+  --card-radius:20px;
+  --card-shadow:0 1px 0 rgba(255,255,255,.04) inset;
+  --card-shadow-hover:0 18px 34px -18px #000, 0 0 0 1px rgba(129,140,248,.5);
+  --card-lift:-4px;
+  --card-tilt:0;
+  --sel-bg:linear-gradient(160deg,rgba(99,102,241,.42),rgba(99,102,241,.18));
+  --sel-border:#818CF8;
+  --sel-ink:#F2F5FF;
+  --chip-bg:rgba(255,255,255,.06);
+  --chip-ink:var(--ink);
+  --chip-border:1px solid rgba(255,255,255,.12);
+  --chip-radius:12px;
+  --chip-on-bg:#6366F1;
+  --chip-on-ink:#fff;
+  --field-bg:rgba(255,255,255,.06);
+  --field-border:1px solid rgba(255,255,255,.14);
+  --dock-bg:rgba(14,20,34,.8);
+  --dock-ink:var(--ink);
+  --dock-border:1px solid rgba(255,255,255,.1);
+  --dock-radius:22px;
+  --dock-shadow:0 24px 50px -24px #000;
+  --font-display:'Quicksand',system-ui,sans-serif;
+  --font-body:'Quicksand',system-ui,sans-serif;
+  --display-weight:700;
+  --display-transform:none;
+  --road-color:rgba(255,255,255,.18);
+  --tape:0;
+  --blur:14px;
+}
 
-  .trip-info{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:22px;}
-  .trip-info label{font-size:13px;color:var(--ink-soft);display:block;margin-bottom:4px;font-weight:600;}
-  .trip-info input{
-    font-family:'Kalam',cursive;font-size:17px;border:none;border-bottom:2px dashed var(--ink-soft);
-    background:transparent;padding:4px 2px;width:220px;color:var(--ink);
-  }
-  .trip-info input:focus{outline:none; border-bottom-color:var(--route-green-dark);}
+/* ============================================================
+   3. BASE
+   ============================================================ */
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  min-height:100vh;
+  background-color:var(--bg);
+  background-image:var(--bg-img);
+  background-size:var(--bg-size);
+  background-position:var(--bg-pos,0 0);
+  background-attachment:var(--bg-attach,scroll);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:15px;
+  -webkit-font-smoothing:antialiased;
+  transition:background-color .3s ease, color .3s ease;
+}
+h1,h2,h3,.display{
+  font-family:var(--font-display);
+  font-weight:var(--display-weight);
+  letter-spacing:var(--title-spacing);
+}
+button,input,select{font-family:inherit;}
+:focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:6px;}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:26px 18px 170px;}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
 
-  /* legend + filters */
-  .legend-bar{
-    display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;
-    margin-bottom:8px;font-size:13px;color:var(--ink-soft);
-  }
-  .legend-bar .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle;}
-  .legend-bar .dot.freq{background:var(--freq);}
-  .legend-bar .dot.occ{background:var(--occ);}
-  .legend-bar .dot.rare{background:var(--rare);}
+/* ============================================================
+   4. BOUTONS GÉNÉRIQUES
+   ============================================================ */
+.btn{
+  border:none;cursor:pointer;font-weight:700;font-size:13.5px;
+  padding:10px 18px;border-radius:var(--chip-radius);
+  display:inline-flex;align-items:center;gap:7px;
+  transition:transform var(--tr), box-shadow var(--tr), background var(--tr), color var(--tr);
+}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--accent2);color:var(--accent2-ink);border:var(--dock-border);}
+.btn-primary:hover{background:var(--accent2-dark);}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;}
+.btn-accent{background:var(--accent);color:var(--accent-ink);}
+.btn-accent:hover{background:var(--accent-dark);}
+.btn-danger{background:transparent;color:var(--danger);border:1.5px solid var(--danger);}
+.btn-danger:hover{background:var(--danger);color:#fff;}
+.btn-soft{background:var(--chip-bg);color:var(--chip-ink);border:var(--chip-border);}
+.btn-soft:hover{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+.btn-sm{padding:6px 12px;font-size:12.5px;}
 
-  .filter-bar{
-    display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:26px;
-  }
-  .filter-btn{
-    border:1.5px solid var(--ink);
-    background:#fff;
-    color:var(--ink);
-    padding:6px 14px;
-    border-radius:999px;
-    font-size:13px;
-    font-weight:600;
-    cursor:pointer;
-  }
-  .filter-btn.active{background:var(--ink); color:#fff;}
+/* ============================================================
+   5. BOUTONS FLOTTANTS (palette + roue crantée)
+   ============================================================ */
+.fab-row{
+  position:fixed;top:14px;right:14px;z-index:80;
+  display:flex;gap:8px;
+}
+.fab{
+  width:44px;height:44px;border-radius:50%;
+  display:grid;place-items:center;font-size:19px;line-height:1;
+  cursor:pointer;
+  background:var(--panel-bg);
+  border:var(--panel-border);
+  color:var(--ink);
+  box-shadow:var(--panel-shadow);
+  backdrop-filter:blur(var(--blur,0px));
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1), box-shadow var(--tr), background var(--tr);
+}
+.fab:hover{background:var(--accent);color:var(--accent-ink);}
+.fab#gearBtn:hover{transform:rotate(90deg);}
+.fab#paletteBtn:hover{transform:rotate(-12deg) scale(1.06);}
+.fab.on{background:var(--accent);color:var(--accent-ink);}
+.fab .dot-live{
+  position:absolute;transform:translate(15px,-14px);
+  width:9px;height:9px;border-radius:50%;background:var(--freq);
+  border:2px solid var(--bg);display:none;
+}
+.fab.linked .dot-live{display:block;}
 
-  .quickpick{
-    display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;
-    margin-bottom:30px;
-    background:var(--card-bg);
-    border:2px dashed var(--line-dash);
-    border-radius:var(--radius);
-    padding:12px 16px;
-  }
-  .quickpick label{font-size:13px;color:var(--ink-soft);font-weight:600;}
-  .quickpick input[type=number]{width:56px;padding:5px;border-radius:6px;border:1px solid #d8d0b6;text-align:center;}
-  .quickpick button{background:var(--route-green);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px;}
-  .quickpick button:hover{background:var(--route-green-dark);}
+/* --- popover thèmes --- */
+.popover{
+  position:fixed;top:66px;right:14px;z-index:85;
+  width:250px;padding:12px;
+  background:var(--panel-bg);border:var(--panel-border);
+  border-radius:var(--panel-radius);box-shadow:var(--panel-shadow);
+  backdrop-filter:blur(var(--blur,0px));
+  display:none;
+}
+.popover.open{display:block;animation:pop .16s ease-out;}
+@keyframes pop{from{opacity:0;transform:translateY(-6px) scale(.97);}to{opacity:1;}}
+.popover h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);font-family:var(--font-body);font-weight:700;}
+.theme-list{display:grid;gap:7px;}
+.theme-opt{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:8px 10px;border-radius:12px;cursor:pointer;
+  background:transparent;border:1.5px solid transparent;color:var(--ink);
+  font-size:13.5px;font-weight:600;text-align:left;
+  transition:background var(--tr), border-color var(--tr);
+}
+.theme-opt:hover{background:rgba(127,127,127,.12);}
+.theme-opt[aria-checked="true"]{border-color:var(--accent);background:rgba(127,127,127,.1);}
+.theme-opt .swatch{display:flex;flex:none;border-radius:7px;overflow:hidden;border:1px solid rgba(0,0,0,.18);}
+.theme-opt .swatch i{width:11px;height:22px;display:block;}
+.theme-opt .tick{margin-left:auto;color:var(--accent);font-size:14px;opacity:0;}
+.theme-opt[aria-checked="true"] .tick{opacity:1;}
 
-  .gh-panel{
-    background:var(--card-bg); border:2px dashed var(--line-dash); border-radius:var(--radius);
-    padding:12px 16px; margin-bottom:24px; font-size:13px;
-  }
-  .gh-panel .gh-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;}
-  .gh-panel input{padding:7px 9px; border-radius:6px; border:1px solid #d8d0b6; font-family:inherit; font-size:13px;}
-  .gh-panel input#ghRepo{width:200px;}
-  .gh-panel input#ghBranch{width:90px;}
-  .gh-panel input#ghToken{flex:1; min-width:180px;}
-  .gh-panel button{background:var(--route-green); color:#fff; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px;}
-  .gh-panel button:hover{background:var(--route-green-dark);}
-  .gh-status{font-size:12px; color:var(--ink-soft); margin-top:6px; display:block;}
-  .gh-note{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+/* ============================================================
+   6. MODALE (réglages GitHub)
+   ============================================================ */
+.backdrop{
+  position:fixed;inset:0;z-index:90;background:rgba(8,12,23,.55);
+  backdrop-filter:blur(3px);display:none;
+  align-items:center;justify-content:center;padding:20px;
+}
+.backdrop.open{display:flex;animation:fade .16s ease-out;}
+@keyframes fade{from{opacity:0;}to{opacity:1;}}
+.modal{
+  width:100%;max-width:520px;max-height:88vh;overflow:auto;
+  background:var(--panel-bg);border:var(--panel-border);
+  border-radius:var(--panel-radius);box-shadow:var(--panel-shadow);
+  padding:22px 22px 20px;
+  animation:rise .2s cubic-bezier(.34,1.4,.64,1);
+}
+@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;}}
+.modal-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:6px;}
+.modal-head h2{margin:0;font-size:22px;color:var(--title);text-shadow:var(--title-shadow);text-transform:var(--display-transform);}
+.modal-close{
+  margin-left:auto;width:32px;height:32px;border-radius:50%;flex:none;
+  border:var(--chip-border);background:var(--chip-bg);color:var(--ink);
+  cursor:pointer;font-size:15px;line-height:1;
+}
+.modal-close:hover{background:var(--danger);color:#fff;border-color:var(--danger);}
+.modal p.lead{margin:0 0 16px;font-size:13.5px;color:var(--ink-soft);line-height:1.5;}
+.field-grid{display:grid;gap:10px;}
+.field{display:grid;gap:5px;}
+.field label{font-size:12px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.6px;}
+.field input{
+  padding:10px 12px;border-radius:10px;border:var(--field-border);
+  background:var(--field-bg);color:var(--ink);font-size:14px;width:100%;
+}
+.field-row{display:flex;gap:10px;}
+.field-row .field{flex:1;}
+.field-row .field.narrow{max-width:120px;}
+.check-line{display:flex;align-items:flex-start;gap:9px;margin-top:14px;font-size:13px;line-height:1.45;cursor:pointer;color:var(--ink);}
+.check-line input{width:17px;height:17px;flex:none;margin-top:1px;accent-color:var(--accent);}
+.note{font-size:11.5px;color:var(--ink-soft);line-height:1.5;margin:8px 0 0;}
+.modal-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px;}
+.gh-status{display:block;margin-top:12px;font-size:12.5px;color:var(--ink-soft);min-height:1.2em;}
 
-  .edit-pencil{
-    position:absolute; bottom:-8px; right:-8px; width:22px; height:22px; border-radius:50%;
-    background:#fff; border:2px solid var(--route-green); font-size:11px; cursor:pointer; z-index:5;
-    display:flex; align-items:center; justify-content:center; line-height:1;
-  }
-  .edit-pencil:hover{background:var(--route-green);}
-  .emoji img{width:1em; height:1em; object-fit:contain; border-radius:4px; vertical-align:middle; display:inline-block;}
+/* ============================================================
+   7. HERO
+   ============================================================ */
+.hero{text-align:center;padding-top:6px;}
+.kicker{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:11.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--ink-soft);
+  background:var(--chip-bg);border:var(--chip-border);
+  padding:5px 13px;border-radius:999px;margin-bottom:12px;
+}
+.hero h1{
+  font-size:clamp(34px,6.4vw,58px);line-height:1.02;margin:0 0 8px;
+  color:var(--title);text-shadow:var(--title-shadow);text-transform:var(--display-transform);
+}
+.hero p.sub{margin:0 auto;max-width:520px;color:var(--ink-soft);font-size:15px;line-height:1.5;}
 
-  .category{margin-bottom:34px;}
-  .category-head{
-    display:inline-flex;align-items:center;gap:8px;background:var(--route-green);color:#fff;
-    padding:6px 16px;border-radius:999px;font-weight:700;font-size:14px;letter-spacing:0.5px;
-    text-transform:uppercase;margin-bottom:14px;
-  }
+.road{position:relative;height:30px;margin:20px 0 24px;}
+.road::before{
+  content:"";position:absolute;top:50%;left:0;right:0;height:4px;transform:translateY(-50%);
+  background-image:repeating-linear-gradient(90deg,var(--road-color) 0 22px,transparent 22px 40px);
+  border-radius:2px;
+}
+.road .car{position:absolute;top:50%;font-size:24px;transform:translate(-50%,-64%);animation:drive 7s linear infinite;}
+@keyframes drive{
+  0%{left:1%;}
+  49.9%{left:97%;}
+  50%{left:97%;transform:translate(-50%,-64%) scaleX(-1);}
+  99.9%{left:1%;transform:translate(-50%,-64%) scaleX(-1);}
+  100%{left:1%;transform:translate(-50%,-64%) scaleX(1);}
+}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;}
+/* ============================================================
+   8. PANNEAUX
+   ============================================================ */
+.panel{
+  background:var(--panel-bg);border:var(--panel-border);
+  border-radius:var(--panel-radius);box-shadow:var(--panel-shadow);
+  backdrop-filter:blur(var(--blur,0px));
+  padding:16px 18px;margin-bottom:18px;
+}
+.panel-title{
+  font-size:11.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--ink-soft);margin:0 0 12px;display:flex;align-items:center;gap:7px;
+}
+.trip-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:560px){.trip-grid{grid-template-columns:1fr;}}
+.trip-grid .field input{font-family:var(--font-display);font-size:17px;}
 
-  .card{
-    position:relative;background:var(--card-bg);border:2px dashed var(--line-dash);border-radius:var(--radius);
-    padding:20px 8px 12px;text-align:center;cursor:pointer;
-    transition:transform .12s ease, border-color .12s ease, background .12s ease;
-    font-size:14px;color:var(--ink);
-  }
-  .card:hover{transform:translateY(-2px); border-color:var(--route-green);}
-  .card .emoji{font-size:52px; display:block; margin-bottom:8px;}
-  .emoji svg{width:1em; height:1em; display:inline-block; vertical-align:middle;}
-  .card .label{font-weight:600; line-height:1.2; display:block;}
-  .card .check{
-    position:absolute;top:-8px; right:-8px;width:22px;height:22px;border-radius:50%;background:#fff;
-    border:2px solid var(--line-dash);display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;
-  }
-  .card.selected{background:var(--highway-yellow); border-style:solid; border-color:var(--highway-yellow-dark);}
-  .card.selected .check{background:var(--route-green); border-color:var(--route-green-dark); color:#fff;}
-  .card.custom-card{border-color:#a9b6c4;}
-  .card .remove-x{
-    position:absolute;top:-8px; left:-8px;width:20px;height:20px;border-radius:50%;background:var(--stop-red);
-    color:#fff;border:none;font-size:12px;line-height:20px;cursor:pointer;display:none;
-  }
-  .card.custom-card .remove-x{display:block;}
-  .rarity-badge{
-    position:absolute; top:6px; left:6px;
-    font-family:'Space Mono',monospace;
-    font-size:10px; font-weight:700;
-    color:#fff;
-    padding:1px 6px;
-    border-radius:999px;
-  }
-  .rarity-badge.r1{background:var(--freq);}
-  .rarity-badge.r2{background:var(--occ);}
-  .rarity-badge.r3{background:var(--rare);}
-  .card.hidden{display:none;}
+/* barre d'outils : recherche + filtres */
+.deck{display:grid;gap:14px;}
+.search-wrap{position:relative;}
+.search-wrap .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;opacity:.6;pointer-events:none;}
+.search-wrap input{
+  width:100%;padding:12px 40px 12px 38px;border-radius:999px;
+  border:var(--field-border);background:var(--field-bg);color:var(--ink);font-size:14.5px;
+}
+.search-wrap .clear-s{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;
+  background:transparent;color:var(--ink-soft);font-size:14px;display:none;
+}
+.search-wrap.has-value .clear-s{display:block;}
+.search-wrap .clear-s:hover{background:var(--danger);color:#fff;}
 
-  .add-form{
-    display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card-bg);
-    border:2px dashed var(--line-dash);border-radius:var(--radius);padding:12px;
-  }
-  .add-form input[type=text]{font-family:'Quicksand',sans-serif;font-size:14px;padding:8px 10px;border:1px solid #d8d0b6;border-radius:8px;flex:1;min-width:140px;}
-  .add-form input#customEmoji{width:56px;text-align:center;font-size:18px;flex:none;}
-  .add-form select{padding:8px 6px;border-radius:8px;border:1px solid #d8d0b6;font-family:inherit;font-size:13px;}
-  .add-form button{background:var(--route-green);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;}
-  .add-form button:hover{background:var(--route-green-dark);}
-  .hint{font-size:12px;color:var(--ink-soft); width:100%;}
+.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.chip{
+  background:var(--chip-bg);color:var(--chip-ink);border:var(--chip-border);
+  border-radius:var(--chip-radius);padding:7px 14px;font-size:12.5px;font-weight:700;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+  transition:background var(--tr), color var(--tr), border-color var(--tr), transform var(--tr);
+}
+.chip:hover{transform:translateY(-1px);}
+.chip[aria-pressed="true"],.chip.on{background:var(--chip-on-bg);color:var(--chip-on-ink);border-color:var(--chip-on-bg);}
+.chip .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+.dot.freq{background:var(--freq);}
+.dot.occ{background:var(--occ);}
+.dot.rare{background:var(--rare);}
+.spacer{flex:1;}
 
-  .stickybar{
-    position:fixed;left:0;right:0;bottom:0;background:var(--ink);color:#fff;padding:12px 20px;
-    display:flex;align-items:center;justify-content:center;gap:22px;flex-wrap:wrap;
-    box-shadow:0 -4px 14px rgba(0,0,0,.2); z-index:50;
-  }
-  .odometer{
-    font-family:'Space Mono',monospace;background:#0e1620;border:2px solid #445164;border-radius:6px;
-    padding:6px 12px;letter-spacing:2px;font-size:15px;
-  }
-  .odometer span{color:var(--highway-yellow);}
-  .stickybar label{font-size:13px;}
-  .stickybar select{font-family:inherit;padding:5px 8px;border-radius:6px;border:none;}
-  .btn-primary{background:var(--highway-yellow);color:var(--ink);border:none;padding:10px 20px;border-radius:999px;font-weight:700;cursor:pointer;font-size:14px;}
-  .btn-primary:hover{background:var(--highway-yellow-dark); color:#fff;}
-  .btn-primary:disabled{opacity:.4; cursor:not-allowed;}
-  .btn-ghost{background:transparent;border:1px solid #66748a;color:#fff;padding:9px 16px;border-radius:999px;cursor:pointer;font-size:13px;}
-  .btn-ghost:hover{border-color:#fff;}
+.pick-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--ink-soft);font-weight:600;}
+.pick-row input[type=number]{
+  width:66px;padding:8px;text-align:center;border-radius:10px;
+  border:var(--field-border);background:var(--field-bg);color:var(--ink);
+  font-family:var(--font-mono);font-size:14px;font-weight:700;
+}
 
-  #preview-view{display:none;}
-  .preview-toolbar{display:flex;justify-content:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
-  .sheet{background:var(--card-bg);border:2px solid var(--ink);border-radius:10px;padding:26px 30px 30px;margin:0 auto 40px;max-width:780px;position:relative;}
-  .sheet-header{text-align:center;border-bottom:3px dashed var(--ink);padding-bottom:14px;margin-bottom:18px;}
-  .sheet-header h2{font-size:30px;margin:0 0 6px;color:var(--route-green-dark);}
-  .sheet-header .fields{display:flex;justify-content:center;gap:26px;flex-wrap:wrap;font-size:14px;margin-top:8px;}
-  .sheet-header .fields span.line{display:inline-block;min-width:140px;border-bottom:1px solid var(--ink);font-family:'Kalam',cursive;font-size:16px;padding-bottom:2px;}
-  .sheet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
-  .sheet-item{border:1.5px dashed var(--line-dash);border-radius:10px;padding:12px 10px;display:flex;align-items:center;gap:10px;font-size:13px;position:relative;}
-  .sheet-item .box{width:20px;height:20px;border:2px solid var(--ink);border-radius:4px;flex:none;}
-  .sheet-item .emoji{font-size:30px;}
-  .sheet-item .pts{
-    position:absolute; top:-8px; right:-6px;
-    font-family:'Space Mono',monospace; font-size:10px; font-weight:700;
-    background:var(--ink); color:#fff; padding:1px 5px; border-radius:999px;
-  }
-  .sheet-footer{display:flex;justify-content:space-between;margin-top:18px;font-size:11px;color:var(--ink-soft);border-top:1px dashed var(--line-dash);padding-top:8px;flex-wrap:wrap;gap:6px;}
-  .no-print-note{text-align:center;font-size:13px;color:var(--ink-soft);margin-bottom:20px;}
+/* ============================================================
+   9. CATÉGORIES + CARTES
+   ============================================================ */
+.category{margin-bottom:26px;}
+.category.empty{display:none;}
+.cat-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.cat-head{
+  display:inline-flex;align-items:center;gap:9px;cursor:pointer;
+  background:var(--accent);color:var(--accent-ink);border:var(--dock-border);
+  padding:8px 16px;border-radius:999px;font-weight:700;font-size:13.5px;
+  letter-spacing:.6px;text-transform:uppercase;
+  transition:transform var(--tr), box-shadow var(--tr), filter var(--tr);
+}
+.cat-head:hover{filter:brightness(1.08);transform:translateY(-1px);}
+.cat-head .cat-count{
+  font-family:var(--font-mono);font-size:11px;background:rgba(255,255,255,.24);
+  padding:2px 7px;border-radius:999px;letter-spacing:0;
+}
+.cat-head .caret{transition:transform var(--tr);font-size:11px;}
+.category.collapsed .cat-head .caret{transform:rotate(-90deg);}
+.category.collapsed .grid{display:none;}
+.category.collapsed .cat-tools{display:none;}
+.cat-tools{display:flex;gap:7px;flex-wrap:wrap;}
 
-  @media print{
-    body{background:#fff !important;}
-    .stickybar, .road-divider .car, header.top, .no-print, #builder-view{display:none !important;}
-    #preview-view{display:block !important;}
-    .sheet{box-shadow:none;border:1.5px solid #000;margin:0 auto 0;page-break-after:always;}
-    .sheet:last-child{page-break-after:auto;}
-    body{background-image:none;}
-  }
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px;}
 
-  @media (max-width:520px){.trip-info input{width:100%;}}
+.card{
+  position:relative;background:var(--card-bg);border:var(--card-border);
+  border-radius:var(--card-radius);box-shadow:var(--card-shadow);
+  padding:24px 10px 14px;text-align:center;cursor:pointer;
+  font-size:13.5px;color:var(--ink);
+  transition:transform var(--tr), box-shadow var(--tr), background var(--tr), border-color var(--tr), color var(--tr);
+}
+.card:hover{transform:translateY(var(--card-lift));box-shadow:var(--card-shadow-hover);border-color:var(--accent);}
+.card.selected{
+  background:var(--sel-bg);border-color:var(--sel-border);border-style:solid;color:var(--sel-ink);
+}
+.card.selected:hover{border-color:var(--sel-border);}
+.card.hidden{display:none;}
+.card .emoji{font-size:50px;display:block;margin-bottom:9px;line-height:1;transition:transform var(--tr);}
+.card:hover .emoji{transform:scale(1.08) rotate(-3deg);}
+.card.selected .emoji{transform:scale(1.04);}
+.emoji svg,.emoji img{width:1em;height:1em;display:inline-block;vertical-align:middle;object-fit:contain;}
+.emoji img{border-radius:6px;}
+.card .label{font-weight:700;line-height:1.22;display:block;overflow-wrap:break-word;hyphens:auto;}
+
+/* thème nuit : plaque claire derrière les icônes pour rester lisible */
+[data-theme="night"] .card .emoji{
+  min-width:66px;width:auto;max-width:100%;height:66px;
+  font-size:40px;margin:0 auto 10px;padding:0 8px;
+  display:inline-grid;place-items:center;
+  background:rgba(255,255,255,.93);border-radius:16px;
+  box-shadow:0 2px 10px -4px rgba(0,0,0,.6);
+}
+[data-theme="night"] .card.selected .emoji{background:#fff;}
+.card .check{
+  position:absolute;top:-9px;right:-9px;width:25px;height:25px;border-radius:50%;
+  background:var(--card-bg);border:2px solid var(--road-color);
+  display:grid;place-items:center;font-size:13px;color:transparent;
+  transition:transform var(--tr), background var(--tr), color var(--tr), border-color var(--tr);
+}
+.card.selected .check{
+  background:var(--accent);border-color:var(--accent-dark);color:#fff;
+  transform:scale(1.12);
+}
+.pts-chip{
+  position:absolute;top:7px;left:7px;
+  font-family:var(--font-mono);font-size:10px;font-weight:700;color:#fff;
+  padding:2px 7px;border-radius:999px;letter-spacing:-.3px;
+}
+.pts-chip.r1{background:var(--freq);}
+.pts-chip.r2{background:var(--occ);}
+.pts-chip.r3{background:var(--rare);}
+.card .remove-x,.card .edit-pencil{
+  position:absolute;width:22px;height:22px;border-radius:50%;
+  border:none;cursor:pointer;font-size:11px;line-height:1;
+  display:grid;place-items:center;z-index:4;
+}
+.card .remove-x{top:-9px;left:-9px;background:var(--danger);color:#fff;display:none;}
+.card.custom-card .remove-x{display:grid;}
+.card .edit-pencil{bottom:-9px;right:-9px;background:var(--card-bg);border:2px solid var(--accent);}
+.card .edit-pencil:hover{background:var(--accent);}
+.card.custom-card{border-style:dotted;}
+
+/* effet scotch (thème carnet uniquement) */
+.card::after{
+  content:"";position:absolute;top:-8px;left:50%;transform:translateX(-50%) rotate(-2deg);
+  width:46px;height:15px;background:rgba(240,172,61,.34);
+  border-left:1px dashed rgba(0,0,0,.08);border-right:1px dashed rgba(0,0,0,.08);
+  opacity:calc(var(--tape) * .9);pointer-events:none;
+  display:var(--tape-display,block);
+}
+[data-theme="comic"] .card::after,[data-theme="modern"] .card::after,[data-theme="night"] .card::after{display:none;}
+[data-theme="paper"] .card:nth-child(3n){transform:rotate(-.5deg);}
+[data-theme="paper"] .card:nth-child(4n){transform:rotate(.6deg);}
+[data-theme="paper"] .card:hover{transform:translateY(var(--card-lift)) rotate(0deg);}
+
+.no-result{
+  text-align:center;padding:36px 18px;color:var(--ink-soft);font-size:15px;
+  border:var(--panel-border);border-radius:var(--panel-radius);background:var(--panel-bg);
+}
+.no-result .big{font-size:40px;display:block;margin-bottom:10px;}
+
+/* formulaire d'ajout */
+.add-form{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.add-form input[type=text]{
+  padding:10px 12px;border-radius:12px;border:var(--field-border);
+  background:var(--field-bg);color:var(--ink);font-size:14px;flex:1;min-width:150px;
+}
+.add-form input#customEmoji{width:60px;flex:none;text-align:center;font-size:20px;}
+.add-form select{
+  padding:10px 8px;border-radius:12px;border:var(--field-border);
+  background:var(--field-bg);color:var(--ink);font-size:13.5px;
+}
+.hint{font-size:12px;color:var(--ink-soft);width:100%;line-height:1.5;}
+
+/* ============================================================
+   10. DOCK (barre flottante)
+   ============================================================ */
+.dock{
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  z-index:70;width:min(940px,calc(100% - 24px));
+  background:var(--dock-bg);color:var(--dock-ink);border:var(--dock-border);
+  border-radius:var(--dock-radius);box-shadow:var(--dock-shadow);
+  backdrop-filter:blur(var(--blur,0px));
+  padding:12px 16px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.odo{
+  font-family:var(--font-mono);font-size:14px;font-weight:700;
+  background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);
+  border-radius:10px;padding:7px 12px;letter-spacing:.5px;white-space:nowrap;
+}
+[data-theme="modern"] .odo{background:rgba(15,23,42,.06);border-color:rgba(15,23,42,.1);}
+.odo b{color:var(--accent2);}
+.dock .prog{flex:1;min-width:110px;height:8px;border-radius:999px;background:rgba(127,127,127,.28);overflow:hidden;}
+.dock .prog i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .35s cubic-bezier(.4,0,.2,1);}
+.dock label{font-size:12.5px;font-weight:600;opacity:.85;}
+.dock select{padding:7px 9px;border-radius:9px;border:1px solid rgba(127,127,127,.35);background:var(--field-bg);color:var(--ink);font-size:13px;}
+.dock .btn-soft{background:transparent;color:var(--dock-ink);border:1px solid rgba(127,127,127,.45);}
+.dock .btn-soft:hover{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+@media (max-width:640px){
+  .dock{gap:9px;padding:11px 13px;}
+  .dock .prog{order:5;flex-basis:100%;}
+  .dock .odo{font-size:12.5px;padding:6px 9px;}
+}
+
+/* toast */
+.toast{
+  position:fixed;bottom:96px;left:50%;transform:translate(-50%,14px);
+  z-index:95;padding:11px 18px;border-radius:999px;
+  background:var(--ink);color:var(--bg);font-size:13.5px;font-weight:700;
+  box-shadow:0 14px 30px -14px rgba(0,0,0,.6);
+  opacity:0;pointer-events:none;transition:opacity .2s ease, transform .2s ease;
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+
+/* ============================================================
+   11. VUE APERÇU / FICHE IMPRIMABLE
+   ============================================================ */
+#preview-view{display:none;}
+.preview-toolbar{display:flex;justify-content:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.preview-note{text-align:center;font-size:13px;color:var(--ink-soft);margin:0 0 26px;}
+
+.sheet{
+  background:#fff;color:#15202E;
+  border:2px solid #15202E;border-radius:14px;
+  padding:26px 30px 24px;margin:0 auto 34px;max-width:790px;position:relative;
+  box-shadow:0 24px 50px -28px rgba(0,0,0,.5);
+}
+.sheet-top{display:flex;align-items:center;gap:14px;border-bottom:3px double #15202E;padding-bottom:14px;margin-bottom:16px;}
+.sheet-mark{
+  flex:none;width:54px;height:54px;border-radius:50%;
+  border:3px solid #2F6E4F;color:#2F6E4F;
+  display:grid;place-items:center;font-size:25px;
+  transform:rotate(-9deg);
+}
+.sheet-titles{flex:1;min-width:0;}
+.sheet-titles h2{font-family:'Kalam',cursive;font-weight:700;font-size:27px;margin:0;color:#1e4a34;letter-spacing:.3px;}
+.sheet-titles .tag{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:#6d7a8b;font-weight:700;}
+.sheet-page{
+  flex:none;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;
+  border:1.5px solid #15202E;border-radius:999px;padding:4px 10px;white-space:nowrap;
+}
+.sheet-fields{display:flex;gap:22px;flex-wrap:wrap;font-size:12.5px;margin-bottom:16px;color:#41505f;}
+.sheet-fields span.line{
+  display:inline-block;min-width:150px;border-bottom:1.5px dotted #15202E;
+  font-family:'Kalam',cursive;font-size:16px;color:#15202E;padding:0 4px 1px;
+}
+.sheet-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:11px;}
+.sheet-item{
+  border:1.5px solid #cbd3dc;border-radius:11px;padding:11px 10px;
+  display:flex;align-items:center;gap:9px;font-size:12.5px;position:relative;
+  background:#fbfcfd;
+}
+.sheet-item .box{width:22px;height:22px;border:2.5px solid #15202E;border-radius:5px;flex:none;background:#fff;}
+.sheet-item .emoji{font-size:29px;flex:none;line-height:1;}
+.sheet-item .txt{
+  font-weight:600;line-height:1.25;min-width:0;flex:1;
+  overflow-wrap:break-word;hyphens:auto;
+}
+.sheet-item .pts{
+  position:absolute;top:-8px;right:-6px;
+  font-family:'Space Mono',monospace;font-size:9.5px;font-weight:700;
+  background:#15202E;color:#fff;padding:2px 6px;border-radius:999px;
+}
+.sheet-score{
+  margin-top:18px;border:2px dashed #15202E;border-radius:11px;padding:12px 14px;
+  display:flex;gap:20px;flex-wrap:wrap;align-items:center;font-size:12.5px;
+}
+.sheet-score .cell{display:flex;align-items:baseline;gap:8px;font-weight:700;}
+.sheet-score .blank{display:inline-block;min-width:64px;border-bottom:1.5px solid #15202E;height:17px;}
+.sheet-score .rule{margin-left:auto;font-weight:400;color:#6d7a8b;font-size:11px;}
+.sheet-foot{
+  display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  margin-top:12px;padding-top:9px;border-top:1.5px dotted #b9c2cc;
+  font-size:10.5px;color:#6d7a8b;
+}
+
+/* ============================================================
+   12. IMPRESSION
+   ============================================================ */
+@media print{
+  @page{margin:11mm;}
+  html,body{background:#fff !important;color:#000 !important;}
+  body{background-image:none !important;font-size:12px;}
+  .fab-row,.popover,.backdrop,.dock,.toast,.no-print,#builder-view,.road .car{display:none !important;}
+  #preview-view{display:block !important;}
+  .wrap{padding:0 !important;max-width:none !important;}
+  .sheet{
+    box-shadow:none !important;border:1.5px solid #000 !important;border-radius:0 !important;
+    margin:0 auto !important;padding:8mm 6mm !important;max-width:none !important;
+    page-break-after:always;break-after:page;
+  }
+  .sheet:last-child{page-break-after:auto;break-after:auto;}
+  /* la fiche occupe la page entière : les rangées s'aèrent, le score reste en bas */
+  .sheet{display:flex;flex-direction:column;min-height:248mm;}
+  .sheet-grid{flex:1 1 auto;align-content:space-evenly;}
+  .sheet-item{break-inside:avoid;background:#fff !important;padding:14px 11px;}
+  .sheet-mark{border-color:#000 !important;color:#000 !important;}
+  .sheet-titles h2{color:#000 !important;}
+  .sheet-item .pts{background:#000 !important;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+  .road .car{left:50% !important;}
+  html{scroll-behavior:auto;}
+}
 </style>
 </head>
 <body>
 
+<!-- ===== boutons flottants ===== -->
+<div class="fab-row no-print">
+  <button type="button" class="fab" id="paletteBtn" title="Changer l'apparence" aria-label="Changer l'apparence" aria-expanded="false">🎨</button>
+  <button type="button" class="fab" id="gearBtn" title="Réglages" aria-label="Réglages" aria-expanded="false">⚙️<span class="dot-live"></span></button>
+</div>
+
+<!-- ===== popover thèmes ===== -->
+<div class="popover" id="palettePop" role="radiogroup" aria-label="Apparence">
+  <h3>Apparence</h3>
+  <div class="theme-list">
+    <button type="button" class="theme-opt" role="radio" aria-checked="true" data-theme-val="paper">
+      <span class="swatch"><i style="background:#F5EDD6"></i><i style="background:#2F6E4F"></i><i style="background:#F0AC3D"></i></span>
+      <span>📜 Carnet de route</span><span class="tick">✓</span>
+    </button>
+    <button type="button" class="theme-opt" role="radio" aria-checked="false" data-theme-val="comic">
+      <span class="swatch"><i style="background:#FFF1CE"></i><i style="background:#E8412B"></i><i style="background:#FFC800"></i></span>
+      <span>💥 BD cartoon</span><span class="tick">✓</span>
+    </button>
+    <button type="button" class="theme-opt" role="radio" aria-checked="false" data-theme-val="modern">
+      <span class="swatch"><i style="background:#F3F6FB"></i><i style="background:#4F46E5"></i><i style="background:#F59E0B"></i></span>
+      <span>✨ Moderne</span><span class="tick">✓</span>
+    </button>
+    <button type="button" class="theme-opt" role="radio" aria-checked="false" data-theme-val="night">
+      <span class="swatch"><i style="background:#0B1020"></i><i style="background:#6366F1"></i><i style="background:#FBBF24"></i></span>
+      <span>🌙 Nuit</span><span class="tick">✓</span>
+    </button>
+  </div>
+  <p class="note">Ton choix est mémorisé sur cet appareil.</p>
+</div>
+
+<!-- ===== modale réglages ===== -->
+<div class="backdrop" id="settingsBackdrop" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="modal" id="settingsModal">
+    <div class="modal-head">
+      <h2 id="settingsTitle">⚙️ Réglages</h2>
+      <button type="button" class="modal-close" id="settingsClose" aria-label="Fermer">✕</button>
+    </div>
+    <p class="lead">
+      Connecte le dépôt GitHub du projet pour remplacer les icônes par tes propres images.
+      Un crayon ✏️ apparaît alors sur chaque carte.
+    </p>
+
+    <div class="field-grid">
+      <div class="field">
+        <label for="ghRepo">Dépôt</label>
+        <input type="text" id="ghRepo" placeholder="propriétaire/repo" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field-row">
+        <div class="field narrow">
+          <label for="ghBranch">Branche</label>
+          <input type="text" id="ghBranch" value="main" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="field">
+          <label for="ghToken">Token d'accès</label>
+          <input type="password" id="ghToken" placeholder="ghp_…" autocomplete="off">
+        </div>
+      </div>
+    </div>
+
+    <label class="check-line">
+      <input type="checkbox" id="ghRemember">
+      <span>Se souvenir de moi sur cet appareil — le token reste stocké dans ce navigateur, à éviter sur un ordinateur partagé.</span>
+    </label>
+    <p class="note">
+      Sans cette case, le token n'est gardé qu'en mémoire le temps de la session.
+      Utilise de préférence un token à portée limitée (Contents&nbsp;: Read/Write sur ce seul dépôt).
+    </p>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-accent" id="ghConnectBtn">🔗 Se connecter</button>
+      <button type="button" class="btn btn-danger" id="ghForgetBtn" style="display:none;">Oublier le token</button>
+    </div>
+    <span class="gh-status" id="ghStatus"></span>
+  </div>
+</div>
+
+<!-- ============ VUE ÉDITION ============ -->
 <div class="wrap" id="builder-view">
-  <header class="top">
-    <h1>🧭 Chasse au trésor de la route</h1>
-    <p class="sub">Coche les éléments à repérer, ajoute les tiens, puis génère la fiche à imprimer.</p>
+
+  <header class="hero">
+    <span class="kicker">🧭 Jeu de trajet · à imprimer</span>
+    <h1>Chasse au trésor de la route</h1>
+    <p class="sub">Choisis ce qu'il faut repérer par la fenêtre, ajoute tes propres idées, puis génère la fiche à imprimer.</p>
   </header>
 
-  <div class="road-divider"><span class="car">🚙</span></div>
+  <div class="road"><span class="car">🚙</span></div>
 
-  <div class="trip-info">
-    <div>
-      <label for="pilotName">Nom du copilote</label>
-      <input type="text" id="pilotName" placeholder="ex : Léa">
-    </div>
-    <div>
-      <label for="destination">Destination</label>
-      <input type="text" id="destination" placeholder="ex : la mer !">
-    </div>
-  </div>
-
-  <div class="gh-panel no-print">
-    <button class="btn-ghost" id="ghToggle" style="color:var(--ink); border-color:var(--ink);">⚙️ Connecter GitHub pour modifier les images</button>
-    <div id="ghForm" style="display:none;">
-      <div class="gh-row">
-        <input type="text" id="ghRepo" placeholder="propriétaire/repo">
-        <input type="text" id="ghBranch" placeholder="branche" value="main">
-        <input type="password" id="ghToken" placeholder="Token GitHub">
-        <button id="ghConnectBtn">Se connecter</button>
-        <button id="ghForgetBtn" style="background:var(--stop-red); display:none;">Oublier le token</button>
+  <section class="panel">
+    <p class="panel-title">🎫 L'équipage</p>
+    <div class="trip-grid">
+      <div class="field">
+        <label for="pilotName">Nom du copilote</label>
+        <input type="text" id="pilotName" placeholder="ex : Léa">
       </div>
-      <label style="display:flex; align-items:center; gap:6px; margin-top:8px; font-size:12.5px; cursor:pointer;">
-        <input type="checkbox" id="ghRemember" style="width:auto;">
-        Se souvenir de moi sur cet appareil (le token reste stocké dans ce navigateur — à éviter sur un ordinateur partagé)
-      </label>
-      <p class="gh-note">Sans cette case cochée, le token n'est gardé qu'en mémoire le temps de cette session. Utilise de préférence un token à portée limitée (Contents: Read/Write sur ce seul repo).</p>
-      <span class="gh-status" id="ghStatus"></span>
+      <div class="field">
+        <label for="destination">Destination</label>
+        <input type="text" id="destination" placeholder="ex : la mer !">
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="legend-bar">
-    <span><span class="dot freq"></span>Fréquent · 1 pt</span>
-    <span><span class="dot occ"></span>Occasionnel · 3 pts</span>
-    <span><span class="dot rare"></span>Rare · 5 pts</span>
-  </div>
+  <section class="panel">
+    <p class="panel-title">🎯 Composer la fiche</p>
+    <div class="deck">
+      <div class="search-wrap" id="searchWrap">
+        <span class="ico">🔎</span>
+        <input type="search" id="searchInput" placeholder="Chercher un élément (vache, radar, tunnel…)" autocomplete="off">
+        <button type="button" class="clear-s" id="clearSearch" aria-label="Effacer la recherche">✕</button>
+      </div>
 
-  <div class="filter-bar" id="filterBar">
-    <button class="filter-btn active" data-filter="all">Tous</button>
-    <button class="filter-btn" data-filter="1">🟢 Fréquents</button>
-    <button class="filter-btn" data-filter="2">🟠 Occasionnels</button>
-    <button class="filter-btn" data-filter="3">🔴 Rares</button>
-  </div>
+      <div class="chips" id="filterBar">
+        <button type="button" class="chip on" data-filter="all" aria-pressed="true">Tous</button>
+        <button type="button" class="chip" data-filter="1" aria-pressed="false"><span class="dot freq"></span>Fréquents · 1&nbsp;pt</button>
+        <button type="button" class="chip" data-filter="2" aria-pressed="false"><span class="dot occ"></span>Occasionnels · 3&nbsp;pts</button>
+        <button type="button" class="chip" data-filter="3" aria-pressed="false"><span class="dot rare"></span>Rares · 5&nbsp;pts</button>
+        <span class="spacer"></span>
+        <button type="button" class="chip" id="onlySelBtn" aria-pressed="false">✅ Ma sélection</button>
+      </div>
 
-  <div class="quickpick">
-    <label for="targetCount">Sélection équilibrée pour environ</label>
-    <input type="number" id="targetCount" value="20" min="6" max="90">
-    <label>éléments</label>
-    <button id="quickPickBtn">🎲 Choisir pour moi</button>
-    <button id="clearBtn2" style="background:var(--stop-red)">Tout désélectionner</button>
-  </div>
+      <div class="pick-row">
+        <span>Sélection équilibrée pour environ</span>
+        <input type="number" id="targetCount" value="20" min="6" max="90">
+        <span>éléments</span>
+        <button type="button" class="btn btn-accent btn-sm" id="quickPickBtn">🎲 Choisir pour moi</button>
+        <button type="button" class="btn btn-danger btn-sm" id="clearBtn2">Tout désélectionner</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-soft btn-sm" id="collapseAllBtn">⇕ Replier / déplier</button>
+      </div>
+    </div>
+  </section>
 
   <div id="categories"></div>
 
-  <div class="category">
-    <div class="category-head">➕ Ajouter un élément</div>
-    <div class="add-form">
-      <input type="text" id="customEmoji" placeholder="🔎" maxlength="4">
-      <input type="text" id="customLabel" placeholder="ex : Camion de déménagement">
-      <select id="customRarity">
-        <option value="1">🟢 Fréquent</option>
-        <option value="2" selected>🟠 Occasionnel</option>
-        <option value="3">🔴 Rare</option>
-      </select>
-      <button id="addBtn">Ajouter</button>
-      <span class="hint">Astuce : colle un emoji (🚀, 🐘, 🎪...) dans la 1ère case, ou laisse-la vide.</span>
-    </div>
+  <div class="no-result" id="noResult" style="display:none;">
+    <span class="big">🤷</span>
+    Aucun élément ne correspond à cette recherche.
   </div>
+
+  <section class="panel" style="margin-top:26px;">
+    <p class="panel-title">➕ Ajouter un élément à toi</p>
+    <div class="add-form">
+      <input type="text" id="customEmoji" placeholder="🔎" maxlength="4" aria-label="Emoji">
+      <input type="text" id="customLabel" placeholder="ex : Camion de déménagement" aria-label="Nom de l'élément">
+      <select id="customRarity" aria-label="Rareté">
+        <option value="1">🟢 Fréquent · 1 pt</option>
+        <option value="2" selected>🟠 Occasionnel · 3 pts</option>
+        <option value="3">🔴 Rare · 5 pts</option>
+      </select>
+      <button type="button" class="btn btn-accent" id="addBtn">Ajouter</button>
+      <span class="hint">Astuce : colle un emoji (🚀, 🐘, 🎪…) dans la première case, ou laisse-la vide.</span>
+    </div>
+  </section>
 </div>
 
+<!-- ============ VUE APERÇU ============ -->
 <div class="wrap" id="preview-view">
   <div class="preview-toolbar no-print">
-    <button class="btn-ghost" id="backBtn">← Retour à l'édition</button>
-    <button class="btn-ghost" id="shuffleBtn">🔀 Mélanger l'ordre</button>
-    <button class="btn-primary" id="printBtn">🖨️ Imprimer</button>
+    <button type="button" class="btn btn-soft" id="backBtn">← Retour à l'édition</button>
+    <button type="button" class="btn btn-soft" id="shuffleBtn">🔀 Mélanger</button>
+    <button type="button" class="btn btn-primary" id="printBtn">🖨️ Imprimer</button>
   </div>
-  <p class="no-print-note no-print">Aperçu de la fiche imprimable — utilise « Imprimer » pour lancer l'impression.</p>
+  <p class="preview-note no-print">Aperçu de la fiche — le rendu imprimé est volontairement sobre pour économiser l'encre.</p>
   <div id="sheets"></div>
 </div>
 
-<div class="stickybar no-print" id="stickybar">
-  <div class="odometer">🎯 <span id="countDisplay">0</span> éléments · <span id="ptsDisplay">0</span> pts max</div>
-  <div>
-    <label for="perPage">Par page&nbsp;</label>
-    <select id="perPage">
-      <option value="9">9</option>
-      <option value="12" selected>12</option>
-      <option value="16">16</option>
-      <option value="20">20</option>
-    </select>
-  </div>
-  <button class="btn-ghost" id="clearBtn">Tout désélectionner</button>
-  <button class="btn-primary" id="generateBtn">Générer la fiche →</button>
+<!-- ============ DOCK ============ -->
+<div class="dock no-print" id="dock">
+  <div class="odo">🎯 <b id="countDisplay">0</b> élém. · <b id="ptsDisplay">0</b> pts</div>
+  <div class="prog" title="Progression vers l'objectif"><i id="progFill"></i></div>
+  <label for="perPage">Par page</label>
+  <select id="perPage">
+    <option value="9">9</option>
+    <option value="12" selected>12</option>
+    <option value="16">16</option>
+    <option value="20">20</option>
+  </select>
+  <button type="button" class="btn btn-soft btn-sm" id="clearBtn">Vider</button>
+  <button type="button" class="btn btn-primary" id="generateBtn">Générer la fiche →</button>
 </div>
 
+<div class="toast" id="toast"></div>
 <script>
 // rarity: 1 = fréquent (1 pt), 2 = occasionnel (3 pts), 3 = rare (5 pts)
 const DEFAULT_ITEMS = [
@@ -543,24 +1118,127 @@ const ICONS = {
   car_jaune: carColorSVG("#F2C511"),
   car_verte: carColorSVG("#2F8F46"),
 };
-// --- Connexion GitHub pour les images personnalisées ---
-let gh = {owner:"", repo:"", branch:"main", token:"", connected:false};
-let customIcons = {}; // slug -> URL (blob ou data URI)
 
+/* ============================================================
+   A. UTILITAIRES
+   ============================================================ */
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 function slugify(s){
   return s.toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 }
+function normalize(s){
+  return s.toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+}
+function shuffle(arr){
+  arr = [...arr];
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+let toastTimer = null;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2400);
+}
+
+/* ============================================================
+   B. THÈMES
+   ============================================================ */
+const THEME_KEY = "roule-trouve-theme";
+const VALID_THEMES = ["paper","comic","modern","night"];
+
+function applyTheme(name, save){
+  if(!VALID_THEMES.includes(name)) name = "paper";
+  document.documentElement.setAttribute('data-theme', name);
+  document.querySelectorAll('.theme-opt').forEach(b=>{
+    b.setAttribute('aria-checked', String(b.dataset.themeVal === name));
+  });
+  if(save){ try{ localStorage.setItem(THEME_KEY, name); }catch(e){} }
+}
+(function initTheme(){
+  let saved = null;
+  try{ saved = localStorage.getItem(THEME_KEY); }catch(e){}
+  if(!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) saved = "night";
+  applyTheme(saved || "paper", false);
+})();
+
+const paletteBtn = document.getElementById('paletteBtn');
+const palettePop = document.getElementById('palettePop');
+function closePalette(){
+  palettePop.classList.remove('open');
+  paletteBtn.classList.remove('on');
+  paletteBtn.setAttribute('aria-expanded','false');
+}
+paletteBtn.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  const open = palettePop.classList.toggle('open');
+  paletteBtn.classList.toggle('on', open);
+  paletteBtn.setAttribute('aria-expanded', String(open));
+});
+palettePop.addEventListener('click', (e)=>{
+  const opt = e.target.closest('.theme-opt');
+  if(!opt) return;
+  applyTheme(opt.dataset.themeVal, true);
+  closePalette();
+});
+document.addEventListener('click', (e)=>{
+  if(palettePop.classList.contains('open') && !palettePop.contains(e.target) && e.target !== paletteBtn){
+    closePalette();
+  }
+});
+
+/* ============================================================
+   C. MODALE RÉGLAGES
+   ============================================================ */
+const backdrop = document.getElementById('settingsBackdrop');
+const gearBtn = document.getElementById('gearBtn');
+function openSettings(){
+  backdrop.classList.add('open');
+  gearBtn.setAttribute('aria-expanded','true');
+  closePalette();
+  setTimeout(()=>document.getElementById('ghRepo').focus(), 60);
+}
+function closeSettings(){
+  backdrop.classList.remove('open');
+  gearBtn.setAttribute('aria-expanded','false');
+}
+gearBtn.addEventListener('click', openSettings);
+document.getElementById('settingsClose').addEventListener('click', closeSettings);
+backdrop.addEventListener('mousedown', (e)=>{ if(e.target === backdrop) closeSettings(); });
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape'){
+    if(backdrop.classList.contains('open')) closeSettings();
+    else closePalette();
+  }
+});
+
+/* ============================================================
+   D. CONNEXION GITHUB (icônes personnalisées)
+   ============================================================ */
+let gh = {owner:"", repo:"", branch:"main", token:"", connected:false};
+let customIcons = {};                     // slug -> URL (blob ou data URI)
+const GH_STORAGE_KEY = "roule-trouve-gh-config";
 
 function visual(item){
   const slug = slugify(item.label);
-  if(customIcons[slug]) return `<img src="${customIcons[slug]}" alt="${item.label}">`;
+  if(customIcons[slug]) return `<img src="${customIcons[slug]}" alt="${esc(item.label)}">`;
   return item.icon ? ICONS[item.icon] : item.emoji;
 }
-
 function setGhStatus(msg){
   const el = document.getElementById('ghStatus');
   if(el) el.textContent = msg;
+}
+function markLinked(on){
+  gearBtn.classList.toggle('linked', !!on);
+  gearBtn.title = on ? "Réglages · GitHub connecté" : "Réglages";
 }
 
 function fileToPngBase64(file){
@@ -590,8 +1268,8 @@ function fileToPngBase64(file){
 }
 
 async function uploadIcon(slug, file){
-  if(!gh.connected){ setGhStatus("Connecte-toi d'abord à GitHub."); return; }
-  setGhStatus(`Envoi de l'image pour « ${slug} »...`);
+  if(!gh.connected){ setGhStatus("Connecte-toi d'abord à GitHub."); openSettings(); return; }
+  setGhStatus(`Envoi de l'image pour « ${slug} »…`);
   try{
     const base64 = await fileToPngBase64(file);
     const path = `icons/${slug}.png`;
@@ -601,7 +1279,7 @@ async function uploadIcon(slug, file){
         headers: { "Authorization": `token ${gh.token}`, "Accept": "application/vnd.github+json" }
       });
       if(getRes.ok){ const j = await getRes.json(); sha = j.sha; }
-    } catch(e){ /* fichier probablement inexistant, on va le créer */ }
+    } catch(e){ /* fichier probablement inexistant : on le crée */ }
 
     const putRes = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${path}`, {
       method: "PUT",
@@ -620,6 +1298,7 @@ async function uploadIcon(slug, file){
     customIcons[slug] = "data:image/png;base64," + base64;
     render();
     setGhStatus(`✅ Image de « ${slug} » mise à jour sur GitHub.`);
+    toast("Image mise à jour ✅");
   } catch(err){
     console.error(err);
     setGhStatus(`❌ Échec : ${err.message}`);
@@ -627,12 +1306,12 @@ async function uploadIcon(slug, file){
 }
 
 async function loadCustomIcons(){
-  setGhStatus("Chargement des icônes personnalisées existantes...");
+  setGhStatus("Chargement des icônes personnalisées…");
   try{
     const res = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/icons?ref=${encodeURIComponent(gh.branch)}`, {
       headers: { "Authorization": `token ${gh.token}`, "Accept": "application/vnd.github+json" }
     });
-    if(res.status === 404){ setGhStatus("Connecté — aucun dossier icons/ pour le moment (il sera créé à ta première modification)."); return; }
+    if(res.status === 404){ setGhStatus("Connecté — aucun dossier icons/ pour le moment (il sera créé à ta première image)."); markLinked(true); return; }
     if(res.status === 401 || res.status === 403){ throw new Error("Token invalide ou droits insuffisants."); }
     if(!res.ok) throw new Error(`Impossible de lister icons/ (HTTP ${res.status})`);
     const files = await res.json();
@@ -649,22 +1328,17 @@ async function loadCustomIcons(){
           customIcons[slug] = URL.createObjectURL(blob);
           count++;
         }
-      } catch(e){ /* on ignore ce fichier et on continue */ }
+      } catch(e){ /* on ignore ce fichier */ }
     }
+    markLinked(true);
     setGhStatus(`Connecté — ${count} icône(s) personnalisée(s) chargée(s).`);
     render();
   } catch(err){
     console.error(err);
+    markLinked(false);
     setGhStatus(`❌ ${err.message}`);
   }
 }
-
-document.getElementById('ghToggle').addEventListener('click', ()=>{
-  const form = document.getElementById('ghForm');
-  form.style.display = form.style.display === 'none' ? 'block' : 'none';
-});
-
-const GH_STORAGE_KEY = "roule-trouve-gh-config";
 
 function loadSavedGhConfig(){
   try{
@@ -672,19 +1346,15 @@ function loadSavedGhConfig(){
     return raw ? JSON.parse(raw) : null;
   } catch(e){ return null; }
 }
-function saveGhConfig(cfg){
-  try{ localStorage.setItem(GH_STORAGE_KEY, JSON.stringify(cfg)); } catch(e){}
-}
-function forgetGhConfig(){
-  try{ localStorage.removeItem(GH_STORAGE_KEY); } catch(e){}
-}
+function saveGhConfig(cfg){ try{ localStorage.setItem(GH_STORAGE_KEY, JSON.stringify(cfg)); } catch(e){} }
+function forgetGhConfig(){ try{ localStorage.removeItem(GH_STORAGE_KEY); } catch(e){} }
 
 async function connectGh(){
   const repoVal = document.getElementById('ghRepo').value.trim();
   const parts = repoVal.split('/');
   const token = document.getElementById('ghToken').value.trim();
   if(parts.length !== 2 || !parts[0] || !parts[1] || !token){
-    setGhStatus("Renseigne le repo au format propriétaire/repo, et le token.");
+    setGhStatus("Renseigne le dépôt au format propriétaire/repo, et le token.");
     return;
   }
   gh.owner = parts[0];
@@ -693,49 +1363,82 @@ async function connectGh(){
   gh.token = token;
   gh.connected = true;
 
-  if(document.getElementById('ghRemember').checked){
-    saveGhConfig({owner: gh.owner, repo: gh.repo, branch: gh.branch, token: gh.token});
-  } else {
-    forgetGhConfig();
-  }
-  document.getElementById('ghForgetBtn').style.display = document.getElementById('ghRemember').checked ? 'inline-block' : 'none';
+  const remember = document.getElementById('ghRemember').checked;
+  if(remember) saveGhConfig({owner: gh.owner, repo: gh.repo, branch: gh.branch, token: gh.token});
+  else forgetGhConfig();
+  document.getElementById('ghForgetBtn').style.display = remember ? 'inline-flex' : 'none';
 
   await loadCustomIcons();
   render();
 }
 
 document.getElementById('ghConnectBtn').addEventListener('click', connectGh);
-
+document.getElementById('ghToken').addEventListener('keydown', (e)=>{ if(e.key==='Enter') connectGh(); });
 document.getElementById('ghForgetBtn').addEventListener('click', ()=>{
   forgetGhConfig();
   document.getElementById('ghToken').value = "";
   document.getElementById('ghRemember').checked = false;
   document.getElementById('ghForgetBtn').style.display = 'none';
+  gh.connected = false;
+  markLinked(false);
   setGhStatus("Token oublié sur cet appareil.");
+  render();
 });
 
-// Pré-remplissage et connexion automatique si un token a été sauvegardé sur cet appareil
-(function initGhFromStorage(){
-  const saved = loadSavedGhConfig();
-  if(saved && saved.owner && saved.repo && saved.token){
-    document.getElementById('ghRepo').value = `${saved.owner}/${saved.repo}`;
-    document.getElementById('ghBranch').value = saved.branch || "main";
-    document.getElementById('ghToken').value = saved.token;
-    document.getElementById('ghRemember').checked = true;
-    document.getElementById('ghForgetBtn').style.display = 'inline-block';
-    document.getElementById('ghForm').style.display = 'block';
-    connectGh();
-  }
-})();
-
+/* ============================================================
+   E. ÉTAT DE LA SÉLECTION
+   ============================================================ */
 let items = DEFAULT_ITEMS.map((it,i)=>({...it, id:"i"+i, selected:false, custom:false}));
 let customCount = 0;
 let activeFilter = "all";
+let searchQuery = "";
+let onlySelected = false;
+const collapsed = new Set();
 
+const STATE_KEY = "roule-trouve-state-v2";
+let restoring = false;
+
+function saveState(){
+  if(restoring) return;
+  try{
+    localStorage.setItem(STATE_KEY, JSON.stringify({
+      selected: items.filter(i=>i.selected && !i.custom).map(i=>i.label),
+      customs: items.filter(i=>i.custom).map(i=>({emoji:i.emoji, label:i.label, rarity:i.rarity, selected:i.selected})),
+      pilot: document.getElementById('pilotName').value,
+      dest: document.getElementById('destination').value,
+      perPage: document.getElementById('perPage').value,
+      target: document.getElementById('targetCount').value
+    }));
+  } catch(e){}
+}
+function restoreState(){
+  let s = null;
+  try{ s = JSON.parse(localStorage.getItem(STATE_KEY) || "null"); } catch(e){}
+  if(!s) return;
+  restoring = true;
+  const sel = new Set(s.selected || []);
+  items.forEach(i=>{ if(sel.has(i.label)) i.selected = true; });
+  (s.customs || []).forEach(c=>{
+    customCount++;
+    items.push({cat:"Mes ajouts", emoji:c.emoji, label:c.label, rarity:c.rarity,
+                id:"custom"+customCount, selected:!!c.selected, custom:true});
+  });
+  if(s.pilot) document.getElementById('pilotName').value = s.pilot;
+  if(s.dest) document.getElementById('destination').value = s.dest;
+  if(s.perPage) document.getElementById('perPage').value = s.perPage;
+  if(s.target) document.getElementById('targetCount').value = s.target;
+  restoring = false;
+}
+
+/* ============================================================
+   F. RENDU
+   ============================================================ */
 const categoriesEl = document.getElementById('categories');
 const countDisplay = document.getElementById('countDisplay');
-const ptsDisplay = document.getElementById('ptsDisplay');
-const generateBtn = document.getElementById('generateBtn');
+const ptsDisplay   = document.getElementById('ptsDisplay');
+const progFill     = document.getElementById('progFill');
+const generateBtn  = document.getElementById('generateBtn');
+const noResultEl   = document.getElementById('noResult');
 
 function catIcon(cat){
   const map = {
@@ -750,29 +1453,65 @@ function catIcon(cat){
   return map[cat] || "📌";
 }
 
+function isVisible(item){
+  if(activeFilter !== "all" && String(item.rarity) !== activeFilter) return false;
+  if(onlySelected && !item.selected) return false;
+  if(searchQuery && !normalize(item.label).includes(searchQuery)) return false;
+  return true;
+}
+
 function render(){
   const cats = [...new Set(items.map(i=>i.cat))];
   categoriesEl.innerHTML = "";
+  let totalVisible = 0;
+
   cats.forEach(cat=>{
     const catItems = items.filter(i=>i.cat===cat);
-    const section = document.createElement('div');
-    section.className = "category";
-    section.innerHTML = `<div class="category-head">${catIcon(cat)} ${cat}</div><div class="grid"></div>`;
+    const visibleItems = catItems.filter(isVisible);
+    totalVisible += visibleItems.length;
+
+    const section = document.createElement('section');
+    section.className = "category" + (visibleItems.length ? "" : " empty") + (collapsed.has(cat) ? " collapsed" : "");
+    const selCount = catItems.filter(i=>i.selected).length;
+    const allVisibleSelected = visibleItems.length > 0 && visibleItems.every(i=>i.selected);
+
+    section.innerHTML = `
+      <div class="cat-bar">
+        <button type="button" class="cat-head" aria-expanded="${!collapsed.has(cat)}">
+          <span>${catIcon(cat)}</span>
+          <span>${esc(cat)}</span>
+          <span class="cat-count">${selCount}/${catItems.length}</span>
+          <span class="caret">▾</span>
+        </button>
+        <div class="cat-tools">
+          <button type="button" class="btn btn-soft btn-sm cat-toggle-all">${allVisibleSelected ? "Tout décocher" : "Tout cocher"}</button>
+        </div>
+      </div>
+      <div class="grid"></div>`;
+
+    section.querySelector('.cat-head').addEventListener('click', ()=>{
+      if(collapsed.has(cat)) collapsed.delete(cat); else collapsed.add(cat);
+      render();
+    });
+    section.querySelector('.cat-toggle-all').addEventListener('click', ()=>{
+      visibleItems.forEach(i=>i.selected = !allVisibleSelected);
+      saveState(); render();
+    });
+
     const grid = section.querySelector('.grid');
-    catItems.forEach(item=>{
+    visibleItems.forEach(item=>{
       const card = document.createElement('div');
-      const isHidden = activeFilter !== "all" && String(item.rarity) !== activeFilter;
-      card.className = "card" + (item.selected?" selected":"") + (item.custom?" custom-card":"") + (isHidden?" hidden":"");
+      card.className = "card" + (item.selected?" selected":"") + (item.custom?" custom-card":"");
       card.tabIndex = 0;
       card.setAttribute('role','button');
       card.setAttribute('aria-pressed', item.selected);
       card.innerHTML = `
-        ${item.custom ? '<button class="remove-x" title="Supprimer">×</button>' : ''}
-        <span class="rarity-badge r${item.rarity}">+${POINTS[item.rarity]}</span>
-        <span class="check">✓</span>
+        ${item.custom ? '<button type="button" class="remove-x" title="Supprimer" aria-label="Supprimer">×</button>' : ''}
+        <span class="pts-chip r${item.rarity}">+${POINTS[item.rarity]}</span>
+        <span class="check" aria-hidden="true">✓</span>
         <span class="emoji">${visual(item)}</span>
-        <span class="label">${item.label}</span>
-        ${gh.connected ? '<button class="edit-pencil" title="Changer l\u2019image">✏️</button><input type="file" accept="image/*" class="edit-file-input" style="display:none">' : ''}
+        <span class="label">${esc(item.label)}</span>
+        ${gh.connected ? '<button type="button" class="edit-pencil" title="Changer l’image" aria-label="Changer l’image">✏️</button><input type="file" accept="image/*" class="edit-file-input" style="display:none">' : ''}
       `;
       if(gh.connected){
         const pencil = card.querySelector('.edit-pencil');
@@ -786,15 +1525,14 @@ function render(){
         });
       }
       card.addEventListener('click', (e)=>{
-        if(e.target.closest('.remove-x') || e.target.closest('.edit-pencil') || e.target.closest('.edit-file-input')){
-          if(e.target.closest('.remove-x')){
-            items = items.filter(i=>i.id!==item.id);
-            render();
-          }
+        if(e.target.closest('.edit-pencil') || e.target.closest('.edit-file-input')) return;
+        if(e.target.closest('.remove-x')){
+          items = items.filter(i=>i.id!==item.id);
+          saveState(); render();
           return;
         }
         item.selected = !item.selected;
-        render();
+        saveState(); render();
       });
       card.addEventListener('keydown',(e)=>{
         if(e.key==='Enter' || e.key===' '){ e.preventDefault(); card.click(); }
@@ -803,143 +1541,219 @@ function render(){
     });
     categoriesEl.appendChild(section);
   });
+
+  noResultEl.style.display = totalVisible ? 'none' : 'block';
+
   const selectedItems = items.filter(i=>i.selected);
+  const pts = selectedItems.reduce((s,i)=>s+POINTS[i.rarity],0);
   countDisplay.textContent = selectedItems.length;
-  ptsDisplay.textContent = selectedItems.reduce((s,i)=>s+POINTS[i.rarity],0);
+  ptsDisplay.textContent = pts;
+  const target = Math.max(1, parseInt(document.getElementById('targetCount').value,10) || 20);
+  progFill.style.width = Math.min(100, Math.round(selectedItems.length / target * 100)) + "%";
   generateBtn.disabled = selectedItems.length < 4;
+  generateBtn.title = selectedItems.length < 4 ? "Choisis au moins 4 éléments" : "";
 }
 
+/* ============================================================
+   G. INTERACTIONS
+   ============================================================ */
 document.getElementById('filterBar').addEventListener('click', (e)=>{
-  const btn = e.target.closest('.filter-btn');
+  const btn = e.target.closest('.chip[data-filter]');
   if(!btn) return;
   activeFilter = btn.dataset.filter;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('.chip[data-filter]').forEach(b=>{
+    const on = b === btn;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
   render();
+});
+
+const onlySelBtn = document.getElementById('onlySelBtn');
+onlySelBtn.addEventListener('click', ()=>{
+  onlySelected = !onlySelected;
+  onlySelBtn.classList.toggle('on', onlySelected);
+  onlySelBtn.setAttribute('aria-pressed', String(onlySelected));
+  render();
+});
+
+const searchInput = document.getElementById('searchInput');
+const searchWrap  = document.getElementById('searchWrap');
+searchInput.addEventListener('input', ()=>{
+  searchQuery = normalize(searchInput.value.trim());
+  searchWrap.classList.toggle('has-value', searchInput.value.length > 0);
+  render();
+});
+document.getElementById('clearSearch').addEventListener('click', ()=>{
+  searchInput.value = ""; searchQuery = "";
+  searchWrap.classList.remove('has-value');
+  searchInput.focus(); render();
 });
 
 document.getElementById('quickPickBtn').addEventListener('click', ()=>{
   const target = parseInt(document.getElementById('targetCount').value,10) || 20;
   items.forEach(i=>i.selected=false);
-  // proportion approx : 55% fréquents, 32% occasionnels, 13% rares
+  // proportions : ~55 % fréquents, ~32 % occasionnels, le reste en rares
   const wanted = {
     1: Math.round(target*0.55),
     2: Math.round(target*0.32),
     3: Math.max(1, target - Math.round(target*0.55) - Math.round(target*0.32))
   };
   [1,2,3].forEach(r=>{
-    const pool = shuffle(items.filter(i=>i.rarity===r));
-    pool.slice(0, wanted[r]).forEach(i=>i.selected=true);
+    shuffle(items.filter(i=>i.rarity===r)).slice(0, wanted[r]).forEach(i=>i.selected=true);
   });
+  saveState(); render();
+  toast(`🎲 ${items.filter(i=>i.selected).length} éléments tirés au sort`);
+});
+
+document.getElementById('collapseAllBtn').addEventListener('click', ()=>{
+  const cats = [...new Set(items.map(i=>i.cat))];
+  if(collapsed.size === cats.length) collapsed.clear();
+  else cats.forEach(c=>collapsed.add(c));
   render();
 });
 
 document.getElementById('addBtn').addEventListener('click', ()=>{
-  const emojiInput = document.getElementById('customEmoji');
-  const labelInput = document.getElementById('customLabel');
+  const emojiInput  = document.getElementById('customEmoji');
+  const labelInput  = document.getElementById('customLabel');
   const rarityInput = document.getElementById('customRarity');
   const label = labelInput.value.trim();
-  if(!label) { labelInput.focus(); return; }
-  const emoji = emojiInput.value.trim() || "⭐";
-  const rarity = parseInt(rarityInput.value,10);
+  if(!label){ labelInput.focus(); return; }
   customCount++;
-  items.push({cat:"Mes ajouts", emoji, label, rarity, id:"custom"+customCount, selected:true, custom:true});
-  emojiInput.value = "";
-  labelInput.value = "";
-  render();
-  labelInput.focus();
+  items.push({
+    cat:"Mes ajouts",
+    emoji: emojiInput.value.trim() || "⭐",
+    label,
+    rarity: parseInt(rarityInput.value,10),
+    id:"custom"+customCount, selected:true, custom:true
+  });
+  emojiInput.value = ""; labelInput.value = "";
+  saveState(); render(); labelInput.focus();
+  toast(`« ${label} » ajouté ⭐`);
 });
-
 document.getElementById('customLabel').addEventListener('keydown', (e)=>{
-  if(e.key === 'Enter'){ document.getElementById('addBtn').click(); }
+  if(e.key === 'Enter') document.getElementById('addBtn').click();
 });
 
-function clearAll(){ items.forEach(i=>i.selected=false); render(); }
+function clearAll(){
+  items.forEach(i=>i.selected=false);
+  saveState(); render();
+  toast("Sélection vidée");
+}
 document.getElementById('clearBtn').addEventListener('click', clearAll);
 document.getElementById('clearBtn2').addEventListener('click', clearAll);
 
-function shuffle(arr){
-  arr = [...arr];
-  for(let i=arr.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
-  }
-  return arr;
-}
+['pilotName','destination','perPage'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', saveState);
+});
+document.getElementById('targetCount').addEventListener('input', ()=>{ saveState(); render(); });
 
+/* ============================================================
+   H. FICHE IMPRIMABLE
+   ============================================================ */
 let currentSelection = [];
 
 function buildPreview(){
   const perPage = parseInt(document.getElementById('perPage').value,10);
   const pilot = document.getElementById('pilotName').value.trim();
-  const dest = document.getElementById('destination').value.trim();
+  const dest  = document.getElementById('destination').value.trim();
   const sheetsEl = document.getElementById('sheets');
   sheetsEl.innerHTML = "";
 
-  const totalPts = currentSelection.reduce((s,i)=>s+POINTS[i.rarity],0);
+  const grandTotal = currentSelection.reduce((s,i)=>s+POINTS[i.rarity],0);
   const chunks = [];
   for(let i=0;i<currentSelection.length;i+=perPage){
     chunks.push(currentSelection.slice(i,i+perPage));
   }
-  const totalPages = chunks.length;
 
   chunks.forEach((chunk, idx)=>{
+    const pagePts = chunk.reduce((s,i)=>s+POINTS[i.rarity],0);
+    const isLast = idx === chunks.length-1;
     const sheet = document.createElement('div');
     sheet.className = "sheet";
     sheet.innerHTML = `
-      <div class="sheet-header">
-        <h2>🧭 Chasse au trésor de la route</h2>
-        <div class="fields">
-          <span>Copilote : <span class="line">${pilot || "&nbsp;"}</span></span>
-          <span>Destination : <span class="line">${dest || "&nbsp;"}</span></span>
+      <div class="sheet-top">
+        <div class="sheet-mark">🧭</div>
+        <div class="sheet-titles">
+          <div class="tag">Jeu de trajet</div>
+          <h2>Chasse au trésor de la route</h2>
         </div>
+        <div class="sheet-page">PAGE ${idx+1}/${chunks.length}</div>
       </div>
+
+      <div class="sheet-fields">
+        <span>Copilote : <span class="line">${esc(pilot) || "&nbsp;"}</span></span>
+        <span>Destination : <span class="line">${esc(dest) || "&nbsp;"}</span></span>
+        <span>Date : <span class="line">&nbsp;</span></span>
+      </div>
+
       <div class="sheet-grid">
         ${chunk.map(it=>`
           <div class="sheet-item">
             <span class="pts">+${POINTS[it.rarity]}</span>
             <span class="box"></span>
             <span class="emoji">${visual(it)}</span>
-            <span>${it.label}</span>
-          </div>
-        `).join('')}
+            <span class="txt">${esc(it.label)}</span>
+          </div>`).join('')}
       </div>
-      <div class="sheet-footer">
-        <span>Page ${idx+1} / ${totalPages}</span>
-        <span>Score total possible sur la fiche complète : ${totalPts} pts</span>
+
+      <div class="sheet-score">
+        <span class="cell">Cochés sur cette page <span class="blank"></span> / ${chunk.length}</span>
+        <span class="cell">Points <span class="blank"></span> / ${pagePts}</span>
+        ${isLast && chunks.length>1 ? `<span class="cell">🏆 TOTAL DU TRAJET <span class="blank"></span> / ${grandTotal}</span>` : ''}
+        <span class="rule">1 pt = fréquent · 3 pts = occasionnel · 5 pts = rare</span>
+      </div>
+
+      <div class="sheet-foot">
+        <span>${esc(pilot) ? "Copilote : " + esc(pilot) : "Chasse au trésor de la route"}</span>
+        <span>Score maxi du trajet : ${grandTotal} pts</span>
         <span>Bonne route ! 🚗💨</span>
-      </div>
-    `;
+      </div>`;
     sheetsEl.appendChild(sheet);
   });
 }
 
 document.getElementById('generateBtn').addEventListener('click', ()=>{
   currentSelection = items.filter(i=>i.selected);
-  if(currentSelection.length < 4) return;
+  if(currentSelection.length < 4){ toast("Choisis au moins 4 éléments"); return; }
   buildPreview();
   document.getElementById('builder-view').style.display = 'none';
   document.getElementById('preview-view').style.display = 'block';
-  document.getElementById('stickybar').style.display = 'none';
+  document.getElementById('dock').style.display = 'none';
   window.scrollTo(0,0);
 });
 
 document.getElementById('backBtn').addEventListener('click', ()=>{
   document.getElementById('builder-view').style.display = 'block';
   document.getElementById('preview-view').style.display = 'none';
-  document.getElementById('stickybar').style.display = 'flex';
+  document.getElementById('dock').style.display = 'flex';
   window.scrollTo(0,0);
 });
 
 document.getElementById('shuffleBtn').addEventListener('click', ()=>{
   currentSelection = shuffle(currentSelection);
   buildPreview();
+  toast("Ordre mélangé 🔀");
 });
 
-document.getElementById('printBtn').addEventListener('click', ()=>{
-  window.print();
-});
+document.getElementById('printBtn').addEventListener('click', ()=>window.print());
 
+/* ============================================================
+   I. DÉMARRAGE
+   ============================================================ */
+(function initGhFromStorage(){
+  const saved = loadSavedGhConfig();
+  if(saved && saved.owner && saved.repo && saved.token){
+    document.getElementById('ghRepo').value = `${saved.owner}/${saved.repo}`;
+    document.getElementById('ghBranch').value = saved.branch || "main";
+    document.getElementById('ghToken').value = saved.token;
+    document.getElementById('ghRemember').checked = true;
+    document.getElementById('ghForgetBtn').style.display = 'inline-flex';
+    connectGh();
+  }
+})();
+
+restoreState();
 render();
 </script>
 
