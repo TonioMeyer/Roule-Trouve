@@ -772,12 +772,31 @@ button,input,select{font-family:inherit;}
     box-shadow:none !important;border:1.5px solid #000 !important;border-radius:0 !important;
     margin:0 auto !important;padding:8mm 6mm !important;max-width:none !important;
     page-break-after:always;break-after:page;
+    display:flex;flex-direction:column;
   }
   .sheet:last-child{page-break-after:auto;break-after:auto;}
-  /* la fiche occupe la page entière : les rangées s'aèrent, le score reste en bas */
-  .sheet{display:flex;flex-direction:column;min-height:248mm;}
-  .sheet-grid{flex:1 1 auto;align-content:space-evenly;}
-  .sheet-item{break-inside:avoid;background:#fff !important;padding:14px 11px;}
+
+  /* PLEINE PAGE : la fiche remplit la A4, grille dense multi-colonnes */
+  .sheet.full{min-height:255mm;}
+  .sheet.full .sheet-grid{
+    flex:1 1 auto;
+    grid-template-columns:repeat(3,1fr);
+    align-content:stretch;gap:8px;
+  }
+  .sheet.full .sheet-item{align-items:center;}
+
+  /* DEMI-PAGE : cartes serrées en haut, deux fiches tiennent sur une feuille */
+  .sheet.half{min-height:auto;page-break-after:auto;break-after:auto;}
+  .sheet.half .sheet-grid{
+    flex:0 0 auto;
+    grid-template-columns:repeat(3,1fr);
+    align-content:start;gap:7px;
+  }
+  /* deux demi-pages par feuille : on coupe après chaque paire */
+  .sheet.half.break-after{page-break-after:always;break-after:page;}
+
+  .sheet-grid{grid-template-columns:repeat(3,1fr);}
+  .sheet-item{break-inside:avoid;background:#fff !important;padding:10px 9px;}
   .sheet-mark{border-color:#000 !important;color:#000 !important;}
   .sheet-titles h2{color:#000 !important;}
   .sheet-item .pts{background:#000 !important;}
@@ -974,6 +993,12 @@ button,input,select{font-family:inherit;}
   <div class="preview-toolbar no-print">
     <button type="button" class="btn btn-soft" id="backBtn">← Retour à l'édition</button>
     <button type="button" class="btn btn-soft" id="shuffleBtn">🔀 Mélanger</button>
+    <label for="printDensity" style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--ink-soft);">Format
+      <select id="printDensity" style="padding:7px 9px;border-radius:9px;border:var(--field-border);background:var(--field-bg);color:var(--ink);font-size:13px;">
+        <option value="full" selected>Pleine page A4</option>
+        <option value="half">Demi-page A4</option>
+      </select>
+    </label>
     <button type="button" class="btn btn-primary" id="printBtn">🖨️ Imprimer</button>
   </div>
   <p class="preview-note no-print">Aperçu de la fiche — le rendu imprimé est volontairement sobre pour économiser l'encre.</p>
@@ -1796,6 +1821,7 @@ let currentSelection = [];
 
 function buildPreview(){
   const perPage = parseInt(document.getElementById('perPage').value,10);
+  const density = document.getElementById('printDensity').value; // 'full' | 'half'
   const pilot = document.getElementById('pilotName').value.trim();
   const dest  = document.getElementById('destination').value.trim();
   const sheetsEl = document.getElementById('sheets');
@@ -1811,7 +1837,9 @@ function buildPreview(){
     const pagePts = chunk.reduce((s,i)=>s+POINTS[i.rarity],0);
     const isLast = idx === chunks.length-1;
     const sheet = document.createElement('div');
-    sheet.className = "sheet";
+    sheet.className = "sheet " + density;
+    // en demi-page : saut de feuille après chaque paire de fiches
+    if(density === 'half' && (idx % 2 === 1)) sheet.classList.add('break-after');
     sheet.innerHTML = `
       <div class="sheet-top">
         <div class="sheet-mark">🧭</div>
@@ -1875,6 +1903,11 @@ document.getElementById('shuffleBtn').addEventListener('click', ()=>{
   currentSelection = shuffle(currentSelection);
   buildPreview();
   toast("Ordre mélangé 🔀");
+});
+
+document.getElementById('printDensity').addEventListener('change', ()=>{
+  buildPreview();
+  toast(document.getElementById('printDensity').value === 'half' ? 'Demi-page A4' : 'Pleine page A4');
 });
 
 document.getElementById('printBtn').addEventListener('click', ()=>window.print());
