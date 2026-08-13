@@ -758,6 +758,23 @@ button,input,select{font-family:inherit;}
   font-size:10.5px;color:#6d7a8b;
 }
 
+/* apercu ecran : reproduit les proportions A4 selon le format choisi */
+.sheet.full{display:flex;flex-direction:column;}
+.sheet.full .sheet-grid{flex:1 1 auto;align-content:stretch;grid-template-columns:repeat(3,1fr);}
+.sheet.half{
+  display:flex;flex-direction:column;overflow:hidden;
+  padding:18px 22px;
+}
+.sheet.half .sheet-grid{flex:0 0 auto;align-content:start;grid-template-columns:repeat(3,1fr);gap:6px;}
+.sheet.half .sheet-top{padding-bottom:8px;margin-bottom:9px;}
+.sheet.half .sheet-mark{width:40px;height:40px;font-size:19px;}
+.sheet.half .sheet-titles h2{font-size:19px;}
+.sheet.half .sheet-fields{margin-bottom:9px;font-size:11px;}
+.sheet.half .sheet-item{padding:7px 8px;font-size:11px;}
+.sheet.half .sheet-item .emoji{font-size:22px;}
+.sheet.half .sheet-score{margin-top:9px;padding:8px 11px;font-size:11px;}
+.sheet.half .sheet-foot{margin-top:7px;}
+
 /* ============================================================
    12. IMPRESSION
    ============================================================ */
@@ -785,13 +802,37 @@ button,input,select{font-family:inherit;}
   }
   .sheet.full .sheet-item{align-items:center;}
 
-  /* DEMI-PAGE : cartes serrées en haut, deux fiches tiennent sur une feuille */
-  .sheet.half{min-height:auto;page-break-after:auto;break-after:auto;}
+  /* DEMI-PAGE : chaque fiche plafonnée à ~moitié d'A4, deux tiennent par feuille */
+  .sheet.half{
+    min-height:auto;
+    height:139mm;max-height:139mm;overflow:hidden;
+    padding:5mm 6mm !important;
+    page-break-after:auto;break-after:auto;
+  }
   .sheet.half .sheet-grid{
     flex:0 0 auto;
     grid-template-columns:repeat(3,1fr);
-    align-content:start;gap:7px;
+    align-content:start;gap:5px;
   }
+  /* en-tête compacté */
+  .sheet.half .sheet-top{padding-bottom:7px;margin-bottom:8px;gap:9px;}
+  .sheet.half .sheet-mark{width:38px;height:38px;font-size:18px;}
+  .sheet.half .sheet-titles h2{font-size:18px;}
+  .sheet.half .sheet-titles .tag{font-size:9px;letter-spacing:1px;}
+  .sheet.half .sheet-page{font-size:9px;padding:3px 7px;}
+  /* champs sur une ligne compacte */
+  .sheet.half .sheet-fields{gap:12px;margin-bottom:8px;font-size:10.5px;}
+  .sheet.half .sheet-fields span.line{min-width:90px;font-size:13px;}
+  /* cartes plus petites */
+  .sheet.half .sheet-item{padding:6px 7px;font-size:10.5px;gap:6px;border-radius:8px;}
+  .sheet.half .sheet-item .box{width:16px;height:16px;border-width:2px;}
+  .sheet.half .sheet-item .emoji{font-size:20px;}
+  .sheet.half .sheet-item .pts{font-size:8px;padding:1px 5px;top:-6px;}
+  /* bloc score allégé */
+  .sheet.half .sheet-score{margin-top:8px;padding:7px 10px;font-size:10.5px;gap:12px;border-width:1.5px;}
+  .sheet.half .sheet-score .blank{min-width:46px;height:14px;}
+  .sheet.half .sheet-score .rule{font-size:9px;}
+  .sheet.half .sheet-foot{margin-top:6px;padding-top:6px;font-size:9px;}
   /* deux demi-pages par feuille : on coupe après chaque paire */
   .sheet.half.break-after{page-break-after:always;break-after:page;}
 
