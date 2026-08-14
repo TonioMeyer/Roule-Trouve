@@ -13,6 +13,26 @@ fenêtre (véhicules, panneaux, animaux, etc.), chacun ayant une rareté
 Le dépôt contient aussi un dossier `icons/` (images PNG personnalisées poussées
 via l'API GitHub depuis l'app) et un dossier `.git`.
 
+## Maquettes et choix de design
+
+Avant d'implémenter le mode demi-page, plusieurs maquettes ont été explorées
+(via l'outil de visualisation, en chat) pour trancher la mise en page :
+
+1. **En-tête** — 3 variantes proposées (A : score en pastille + champs sur
+   1 ligne ; B : tout compact sur 1 ligne ; C : champs empilés à droite).
+   → **Variante A retenue**, puis affinée avec un bloc trajet mis en forme
+   (cartouches Départ / Destination / Date sur fonds pastel).
+2. **Cartes** — 2 traitements proposés (1 : image en pastille, texte à droite,
+   coche en coin ; 2 : liseré coloré à gauche selon rareté, image agrandie,
+   texte + points, **case à cocher à droite**).
+   → **Traitement 2 retenu.**
+
+La maquette finale validée est figée dans le fichier
+**`maquette-demipage-validee.html`** (ouvrable seul dans un navigateur). C'est une
+référence statique ; le rendu réel/dynamique reste produit par
+`chasse-au-tresor.html`. Si le design évolue, penser à régénérer cette maquette
+pour qu'elle reste fidèle.
+
 ## Objet des dernières modifications : refonte de l'impression
 
 Le problème de départ : le rendu imprimé occupait une A4 entière pour un contenu

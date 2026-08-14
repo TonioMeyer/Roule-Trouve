@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maquette validée — Roul'trouv demi-page (traitement 2)</title>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Quicksand:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;padding:28px 18px;background:#F5EDD6;font-family:'Quicksand',system-ui,sans-serif;color:#213042;}
+  .note{max-width:760px;margin:0 auto 20px;font-size:13.5px;color:#5c6675;line-height:1.5;}
+  .note h1{font-family:'Kalam',cursive;font-size:26px;color:#1e4a34;margin:0 0 6px;}
+  .frame{max-width:760px;margin:0 auto;}
+</style>
+</head>
+<body>
+
+<div class="note">
+  <h1>Maquette validée — demi-page A4</h1>
+  Traitement retenu pour le mode « Demi-page » de l'impression : trame fixe 4×4,
+  cartes horizontales à liseré coloré (rareté), image agrandie à gauche, libellé au
+  centre, case à cocher à droite. En-tête « Roul'trouv » + badge Score max, cartouches
+  Départ / Destination / Date. Sans copilote ni pied de page.
+  <br><br>
+  Ce fichier est une <b>maquette de référence figée</b> — le rendu réel (dynamique) est
+  produit par <code>chasse-au-tresor.html</code>.
+</div>
+
+<div class="frame">
+  <div style="background:#fff;border:1.5px solid #15202E;border-radius:8px;padding:14px 16px;color:#15202E;">
+    <!-- en-tête -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:11px;">
+      <div style="flex:none;width:36px;height:36px;border-radius:50%;border:2px solid #2F6E4F;color:#2F6E4F;display:grid;place-items:center;font-size:19px;transform:rotate(-9deg);">🧭</div>
+      <div style="flex:1;">
+        <div style="font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:#6d7a8b;font-weight:700;">Jeu de trajet</div>
+        <div style="font-family:'Kalam',cursive;font-weight:700;font-size:21px;color:#1e4a34;line-height:1;">Roul'trouv</div>
+      </div>
+      <div style="flex:none;text-align:center;background:#1e4a34;color:#fff;border-radius:8px;padding:5px 12px;">
+        <div style="font-size:7px;letter-spacing:.5px;text-transform:uppercase;opacity:.8;">Score max</div>
+        <div style="font-size:16px;font-weight:700;line-height:1.1;">44 pts</div>
+      </div>
+    </div>
+    <!-- cartouches trajet -->
+    <div style="display:flex;gap:8px;margin-bottom:11px;">
+      <div style="flex:1;background:#f2f7f4;border:1px solid #cfe0d6;border-radius:8px;padding:7px 11px;">
+        <div style="font-size:7.5px;letter-spacing:.8px;text-transform:uppercase;color:#2F6E4F;font-weight:700;margin-bottom:3px;">📍 Départ</div>
+        <div style="font-family:'Kalam',cursive;font-size:15px;border-bottom:1px dotted #9bbfa9;min-height:15px;">&nbsp;</div>
+      </div>
+      <div style="flex:1;background:#f2f7f4;border:1px solid #cfe0d6;border-radius:8px;padding:7px 11px;">
+        <div style="font-size:7.5px;letter-spacing:.8px;text-transform:uppercase;color:#2F6E4F;font-weight:700;margin-bottom:3px;">🏁 Destination</div>
+        <div style="font-family:'Kalam',cursive;font-size:15px;border-bottom:1px dotted #9bbfa9;min-height:15px;">&nbsp;</div>
+      </div>
+      <div style="flex:none;width:100px;background:#f7f4ee;border:1px solid #e0d6c3;border-radius:8px;padding:7px 11px;">
+        <div style="font-size:7.5px;letter-spacing:.8px;text-transform:uppercase;color:#a07d2c;font-weight:700;margin-bottom:3px;">📅 Date</div>
+        <div style="font-family:'Kalam',cursive;font-size:15px;border-bottom:1px dotted #cbb98f;min-height:15px;">&nbsp;</div>
+      </div>
+    </div>
+    <!-- trame 4x4 -->
+    <div id="grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;"></div>
+    <!-- bandeau bas -->
+    <div style="display:flex;gap:16px;margin-top:9px;border:1.5px dashed #15202E;border-radius:7px;padding:6px 10px;font-size:9.5px;align-items:center;">
+      <span style="font-weight:700;">Cochés <span style="display:inline-block;border-bottom:1px solid #15202E;width:40px;height:12px;"></span> / 16</span>
+      <span style="font-weight:700;">Points <span style="display:inline-block;border-bottom:1px solid #15202E;width:40px;height:12px;"></span> / 40</span>
+      <span style="margin-left:auto;color:#6d7a8b;font-size:8.5px;">🟢 1pt · 🟠 3pts · 🔴 5pts</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  var cells = [
+    ['🚗','Voiture bleue',1],['🛵','Scooter',3],['🚁','Hélicoptère',5],['🚌','Bus / Car',1],
+    ['🅿️','Parking',1],['🌾','Champ de blé',1],['🐖','Cochon',5],['✈️','Avion',3],
+    ['🚲','Vélo',1],['🚕','Taxi',3],['⛽','Station',1],['🚓','Police',3],
+    ['⛪','Église',1],['🏰','Château',5],['⛰️','Montagne',3],['🦆','Canard',3]
+  ];
+  var rareColor = {1:'#2F8F5B',3:'#E08A1E',5:'#C0392B'};
+  function cell(c){
+    return '<div style="border:1.5px solid #cbd3dc;border-left:4px solid '+rareColor[c[2]]+';border-radius:8px;height:58px;position:relative;display:flex;align-items:center;gap:7px;background:#fbfcfd;padding:6px 8px;">'
+      +'<span style="flex:none;width:38px;text-align:center;font-size:34px;line-height:1;">'+c[0]+'</span>'
+      +'<span style="flex:1;min-width:0;font-size:9.5px;font-weight:600;line-height:1.12;">'+c[1]
+      +'<span style="display:block;font-family:\'Space Mono\',monospace;font-size:8px;color:'+rareColor[c[2]]+';margin-top:2px;">+'+c[2]+' pt</span></span>'
+      +'<span style="flex:none;width:17px;height:17px;border:2px solid #15202E;border-radius:4px;background:#fff;"></span>'
+      +'</div>';
+  }
+  document.getElementById('grid').innerHTML = cells.map(cell).join('');
+</script>
+
+</body>
+</html>
