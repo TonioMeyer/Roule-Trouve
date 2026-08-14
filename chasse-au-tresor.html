@@ -271,6 +271,11 @@ h1,h2,h3,.display{
   letter-spacing:var(--title-spacing);
 }
 button,input,select{font-family:inherit;}
+/* Listes deroulantes natives : sans color-scheme, le menu ouvert reste blanc
+   en theme sombre (options illisibles jusqu'au survol). */
+[data-theme="night"]{color-scheme:dark;}
+[data-theme="paper"],[data-theme="retro"],[data-theme="modern"]{color-scheme:light;}
+select option{background:var(--field-bg);color:var(--ink);}
 :focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:6px;}
 .wrap{max-width:var(--maxw);margin:0 auto;padding:26px 18px 170px;}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
@@ -766,10 +771,13 @@ button,input,select{font-family:inherit;}
    ============================================================ */
 .sheet.full,.sheet.half{width:194mm;max-width:194mm;}
 
-/* --- PLEINE PAGE A4 --- */
+/* --- PLEINE PAGE A4 : meme carte qu'en demi-page, il y en a juste plus ---
+   Trame 3 colonnes x 11 rangees = 33 cases. */
 .sheet.full{display:flex;flex-direction:column;min-height:281mm;padding:8mm 6mm;}
-.sheet.full .sheet-grid{flex:1 1 auto;align-content:stretch;grid-template-columns:repeat(3,1fr);gap:2mm;}
-.sheet.full .sheet-item{align-items:center;}
+.sheet.full .sheet-grid{
+  flex:0 0 auto;align-content:start;
+  grid-template-columns:repeat(3,1fr);grid-auto-rows:17mm;gap:1.3mm;
+}
 
 /* --- DEMI-PAGE A4 : trame FIXE 3 x 5 = 15 cases ---
    Cartes larges (~61mm) : libelles sur une ligne + grandes images.
@@ -801,32 +809,33 @@ button,input,select{font-family:inherit;}
 .sheet.half .sheet-trip .box-trip .val{font-family:'Kalam',cursive;font-size:4mm;color:#15202E;border-bottom:1px dotted #9bbfa9;min-height:4mm;line-height:1.1;}
 .sheet.half .sheet-trip .box-trip.date .val{border-bottom-color:#cbb98f;}
 .sheet.half .sheet-fields{display:none;}
-/* carte horizontale : lisere colore + grande image a gauche, libelle + points, coche a droite */
-.sheet.half .sheet-item{
+/* carte horizontale : lisere colore + grande image a gauche, libelle + points,
+   coche a droite. STYLE COMMUN aux deux formats (pleine page et demi-page). */
+.sheet .sheet-item{
   flex-direction:row;justify-content:flex-start;align-items:center;text-align:left;
   padding:2mm 2.5mm;gap:2.5mm;border-radius:2.1mm;
   height:17mm;overflow:hidden;border:1.5px solid #cbd3dc;border-left-width:4px;
 }
-.sheet.half .sheet-item.r1{border-left-color:var(--freq);}
-.sheet.half .sheet-item.r2{border-left-color:var(--occ);}
-.sheet.half .sheet-item.r3{border-left-color:var(--rare);}
-.sheet.half .sheet-item .emoji{font-size:13mm;line-height:1;flex:none;order:1;width:15mm;text-align:center;}
-.sheet.half .sheet-item .txt{
+.sheet .sheet-item.r1{border-left-color:var(--freq);}
+.sheet .sheet-item.r2{border-left-color:var(--occ);}
+.sheet .sheet-item.r3{border-left-color:var(--rare);}
+.sheet .sheet-item .emoji{font-size:13mm;line-height:1;flex:none;order:1;width:15mm;text-align:center;}
+.sheet .sheet-item .txt{
   flex:1;min-width:0;order:2;display:flex;flex-direction:column;justify-content:center;
   overflow:hidden;
 }
-.sheet.half .sheet-item .txt .lab{
+.sheet .sheet-item .txt .lab{
   font-size:3mm;line-height:1.15;font-weight:600;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
-.sheet.half .sheet-item .txt .rar{
+.sheet .sheet-item .txt .rar{
   font-family:'Space Mono',monospace;font-size:2.4mm;margin-top:.6mm;font-weight:700;
 }
-.sheet.half .sheet-item.r1 .txt .rar{color:var(--freq);}
-.sheet.half .sheet-item.r2 .txt .rar{color:var(--occ);}
-.sheet.half .sheet-item.r3 .txt .rar{color:var(--rare);}
-.sheet.half .sheet-item .box{position:static;flex:none;order:3;width:5.5mm;height:5.5mm;border-width:2px;border-radius:1.2mm;}
-.sheet.half .sheet-item .pts{display:none;}
+.sheet .sheet-item.r1 .txt .rar{color:var(--freq);}
+.sheet .sheet-item.r2 .txt .rar{color:var(--occ);}
+.sheet .sheet-item.r3 .txt .rar{color:var(--rare);}
+.sheet .sheet-item .box{position:static;flex:none;order:3;width:5.5mm;height:5.5mm;border-width:2px;border-radius:1.2mm;}
+.sheet .sheet-item .pts{display:none;}
 /* bandeau bas : juste sous la trame (comme la maquette), pas colle au bas de page */
 .sheet.half .sheet-score{margin-top:2.4mm;padding:1.6mm 2.6mm;font-size:2.5mm;gap:4.2mm;border-width:1.5px;border-radius:1.85mm;flex:none;}
 .sheet.half .sheet-score .blank{min-width:10.6mm;height:3.2mm;}
@@ -1881,8 +1890,8 @@ let currentSelection = [];
 
 function buildPreview(){
   const density = document.getElementById('printDensity').value; // 'full' | 'half'
-  // en demi-page, la trame est fixe (3 x 5) : 15 cases maxi par fiche
-  const perPage = density === 'half' ? 15 : parseInt(document.getElementById('perPage').value,10);
+  // trames fixes (memes cartes dans les deux formats) : 3x11 en pleine page, 3x5 en demi-page
+  const perPage = density === 'half' ? 15 : 33;
   const pilot = document.getElementById('pilotName').value.trim();
   const dest  = document.getElementById('destination').value.trim();
   const sheetsEl = document.getElementById('sheets');
@@ -1961,11 +1970,10 @@ function buildPreview(){
 
       <div class="sheet-grid">
         ${chunk.map(it=>`
-          <div class="sheet-item">
-            <span class="pts">+${POINTS[it.rarity]}</span>
-            <span class="box"></span>
+          <div class="sheet-item r${it.rarity}">
             <span class="emoji">${visual(it)}</span>
-            <span class="txt">${esc(it.label)}</span>
+            <span class="txt"><span class="lab">${esc(it.label)}</span><span class="rar">+${POINTS[it.rarity]} pt</span></span>
+            <span class="box"></span>
           </div>`).join('')}
       </div>
 
