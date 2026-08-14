@@ -677,7 +677,6 @@ button,input,select{font-family:inherit;}
 .bonus-chip:hover{border-color:var(--accent2);}
 .bonus-chip.on{background:var(--accent2);color:var(--accent2-ink);border-color:var(--accent2-dark);}
 .bonus-chip .emoji{font-size:17px;line-height:1;}
-.bonus-chip .stars{font-size:11px;letter-spacing:1px;white-space:nowrap;opacity:.85;}
 .bonus-chip .rm{
   border:none;background:rgba(0,0,0,.2);color:inherit;width:17px;height:17px;border-radius:50%;
   font-size:10px;line-height:1;cursor:pointer;display:grid;place-items:center;margin-left:1px;flex:none;
@@ -868,11 +867,14 @@ button,input,select{font-family:inherit;}
 .sheet.half .sheet-foot{display:none;}
 
 /* --- ENCART BONUS (portion dediee, hors grille principale) ---
-   N'apparait que si des defis bonus sont coches. Quand actif, la grille
-   principale perd UNE rangee (33->30 en pleine page, 15->12 en demi-page)
-   pour lui liberer exactement la place d'une rangee + son gap (17mm+1.3mm
-   = 18.3mm). L'encart est fige a 17mm avec overflow cache : meme si trop
-   de defis sont coches, il ne peut jamais deborder sur la page suivante. */
+   N'apparait que si des defis bonus sont coches. Un defi reussi ne rapporte
+   pas une monnaie a part : il permet de "sauver" un tresor manque en
+   dessinant une etoile dans une case vide de la grille principale (regle
+   expliquee dans le .rule du sheet-score). Quand actif, la grille perd UNE
+   rangee (33->30 en pleine page, 15->12 en demi-page) pour liberer
+   exactement la place d'une rangee + son gap (17mm+1.3mm = 18.3mm).
+   L'encart est fige a 17mm avec overflow cache : meme si trop de defis
+   sont coches, il ne peut jamais deborder sur la page suivante. */
 .sheet-bonus{
   flex:none;height:17mm;overflow:hidden;margin-top:1.3mm;
   display:flex;flex-direction:column;gap:.6mm;
@@ -892,7 +894,6 @@ button,input,select{font-family:inherit;}
 .sheet-bonus .sb-item .box{width:2.6mm;height:2.6mm;border:1.3px solid #15202E;border-radius:.7mm;flex:none;background:#fff;}
 .sheet-bonus .sb-item .emoji{font-size:3.4mm;flex:none;line-height:1;}
 .sheet-bonus .sb-item .txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}
-.sheet-bonus .sb-item .star{flex:none;color:#c98a25;font-size:2.1mm;white-space:nowrap;}
 
 /* ============================================================
    12. IMPRESSION
@@ -1081,21 +1082,17 @@ button,input,select{font-family:inherit;}
       </section>
 
       <section class="panel" id="bonusPanel">
-        <p class="panel-title">🌟 Défis bonus (facultatif) <span class="bonus-count" id="bonusCount"></span></p>
+        <p class="panel-title">🎯 Défis bonus (facultatif) <span class="bonus-count" id="bonusCount"></span></p>
         <p class="hint" style="margin:0 0 12px;">
-          En plus des éléments à repérer, coche des défis bonus à réussir pendant le trajet.
-          Ils sont imprimés à part, avec des étoiles au lieu de points — vise 3-4 défis maxi
-          pour qu'ils tiennent dans leur encart.
+          Coche des défis bonus à réussir pendant le trajet. Chaque défi réussi permet de
+          <strong>sauver un trésor manqué</strong> : l'enfant dessine une ⭐ dans une case
+          non trouvée de la grille, et elle compte comme trouvée. Imprimés à part —
+          vise 3-4 défis maxi pour qu'ils tiennent dans leur encart.
         </p>
         <div class="bonus-list" id="bonusList"></div>
         <div class="add-form" style="margin-top:12px;">
           <input type="text" id="bonusEmoji" placeholder="🔎" maxlength="4" aria-label="Emoji du défi bonus">
           <input type="text" id="bonusLabel" placeholder="ex : Voir un arc-en-ciel" aria-label="Nom du défi bonus">
-          <select id="bonusStars" aria-label="Nombre d'étoiles">
-            <option value="1">⭐ 1 étoile</option>
-            <option value="2" selected>⭐⭐ 2 étoiles</option>
-            <option value="3">⭐⭐⭐ 3 étoiles</option>
-          </select>
           <button type="button" class="btn btn-accent" id="addBonusBtn">Ajouter</button>
         </div>
       </section>
@@ -1289,16 +1286,18 @@ const DEFAULT_ITEMS = [
 
 const POINTS = {1:1, 2:3, 3:5};
 
-// Défis bonus : liste à part (pas de rareté/points, mais des étoiles 1 à 3).
-// Ils ne comptent pas dans le score de la fiche principale et s'impriment
-// dans un encart dédié (voir .sheet-bonus).
+// Défis bonus : liste à part, hors rareté/points. Un défi réussi ne rapporte
+// pas une monnaie séparée : il permet de "sauver" un trésor manqué (dessiner
+// une étoile dans une case vide de la grille principale, qui compte alors
+// comme trouvée). Voir renderBonusBlock() et le .rule du sheet-score pour
+// la règle imprimée sur la fiche.
 const DEFAULT_BONUS_ITEMS = [
-  {emoji:"🌈", label:"Voir un arc-en-ciel", stars:3},
-  {emoji:"📵", label:"30 minutes sans écran", stars:3},
-  {emoji:"🎶", label:"Chanter une chanson en entier", stars:1},
-  {emoji:"🅿️", label:"Se garer du premier coup", stars:2},
-  {emoji:"🎁", label:"Deviner qui arrive en premier", stars:1},
-  {emoji:"😴", label:"Personne ne s'endort avant l'arrivée", stars:2},
+  {emoji:"🌈", label:"Voir un arc-en-ciel"},
+  {emoji:"📵", label:"30 minutes sans écran"},
+  {emoji:"🎶", label:"Chanter une chanson en entier"},
+  {emoji:"🅿️", label:"Se garer du premier coup"},
+  {emoji:"🎁", label:"Deviner qui arrive en premier"},
+  {emoji:"😴", label:"Personne ne s'endort avant l'arrivée"},
 ];
 
 // --- Icônes réalistes (SVG, viewBox 64x64, taille pilotée en CSS via 1em) ---
@@ -1657,7 +1656,7 @@ function saveState(){
       selected: items.filter(i=>i.selected && !i.custom).map(i=>i.label),
       customs: items.filter(i=>i.custom).map(i=>({emoji:i.emoji, label:i.label, rarity:i.rarity, selected:i.selected})),
       bonusSelected: bonusItems.filter(b=>b.selected && !b.custom).map(b=>b.label),
-      bonusCustoms: bonusItems.filter(b=>b.custom).map(b=>({emoji:b.emoji, label:b.label, stars:b.stars, selected:b.selected})),
+      bonusCustoms: bonusItems.filter(b=>b.custom).map(b=>({emoji:b.emoji, label:b.label, selected:b.selected})),
       pilot: document.getElementById('pilotName').value,
       dest: document.getElementById('destination').value,
       target: document.getElementById('targetCount').value
@@ -1680,7 +1679,7 @@ function restoreState(){
   bonusItems.forEach(b=>{ if(bonusSel.has(b.label)) b.selected = true; });
   (s.bonusCustoms || []).forEach(c=>{
     bonusCustomCount++;
-    bonusItems.push({emoji:c.emoji, label:c.label, stars:c.stars,
+    bonusItems.push({emoji:c.emoji, label:c.label,
                       id:"bocustom"+bonusCustomCount, selected:!!c.selected, custom:true});
   });
   if(s.pilot) document.getElementById('pilotName').value = s.pilot;
@@ -1763,12 +1762,11 @@ function renderBonus(){
     <button type="button" class="bonus-chip${b.selected?' on':''}" data-id="${b.id}" aria-pressed="${b.selected}">
       <span class="emoji">${b.emoji}</span>
       <span>${esc(b.label)}</span>
-      <span class="stars">${'⭐'.repeat(b.stars)}</span>
       ${b.custom ? `<span class="rm" data-rm="${b.id}" title="Supprimer" aria-label="Supprimer">×</span>` : ''}
     </button>`).join('');
   const n = bonusItems.filter(b=>b.selected).length;
   document.getElementById('bonusCount').textContent = n ? `${n} actif${n>1?'s':''}` : '';
-  document.getElementById('bonusOdoExtra').textContent = n ? ` · ⭐ ${n}` : '';
+  document.getElementById('bonusOdoExtra').textContent = n ? ` · 🎯 ${n}` : '';
 }
 
 function render(){
@@ -1989,19 +1987,17 @@ document.getElementById('bonusList').addEventListener('click', (e)=>{
 document.getElementById('addBonusBtn').addEventListener('click', ()=>{
   const emojiInput = document.getElementById('bonusEmoji');
   const labelInput = document.getElementById('bonusLabel');
-  const starsInput = document.getElementById('bonusStars');
   const label = labelInput.value.trim();
   if(!label){ labelInput.focus(); return; }
   bonusCustomCount++;
   bonusItems.push({
-    emoji: emojiInput.value.trim() || "⭐",
+    emoji: emojiInput.value.trim() || "🎯",
     label,
-    stars: parseInt(starsInput.value,10),
     id:"bocustom"+bonusCustomCount, selected:true, custom:true
   });
   emojiInput.value = ""; labelInput.value = "";
   saveState(); renderBonus(); labelInput.focus();
-  toast(`Défi bonus « ${label} » ajouté 🌟`);
+  toast(`Défi bonus « ${label} » ajouté 🎯`);
 });
 document.getElementById('bonusLabel').addEventListener('keydown', (e)=>{
   if(e.key === 'Enter') document.getElementById('addBonusBtn').click();
@@ -2032,14 +2028,13 @@ let currentSelection = [];
 function renderBonusBlock(list){
   if(!list.length) return '';
   return `<div class="sheet-bonus">
-    <div class="sb-title">🌟 Défis bonus</div>
+    <div class="sb-title">🎯 Défis bonus</div>
     <div class="sb-grid">
       ${list.map(b=>`
         <div class="sb-item">
           <span class="box"></span>
           <span class="emoji">${b.emoji}</span>
           <span class="txt">${esc(b.label)}</span>
-          <span class="star">${'⭐'.repeat(b.stars)}</span>
         </div>`).join('')}
     </div>
   </div>`;
@@ -2111,7 +2106,7 @@ function buildPreview(){
           <span class="cell">Cochés <span class="blank"></span> / ${chunk.length}</span>
           <span class="cell">Points <span class="blank"></span> / ${pagePts}</span>
           ${chunks.length>1 ? `<span class="cell">Page ${idx+1}/${chunks.length}</span>` : ''}
-          <span class="rule">🟢 1pt · 🟠 3pts · 🔴 5pts</span>
+          <span class="rule">🟢 1pt · 🟠 3pts · 🔴 5pts${bonusActive ? ' · ⭐ défi bonus réussi = 1 trésor sauvé' : ''}</span>
         </div>`;
       sheetsEl.appendChild(sheet);
       return;
@@ -2149,7 +2144,7 @@ function buildPreview(){
         <span class="cell">Cochés sur cette page <span class="blank"></span> / ${chunk.length}</span>
         <span class="cell">Points <span class="blank"></span> / ${pagePts}</span>
         ${isLast && chunks.length>1 ? `<span class="cell">🏆 TOTAL DU TRAJET <span class="blank"></span> / ${grandTotal}</span>` : ''}
-        <span class="rule">1 pt = fréquent · 3 pts = occasionnel · 5 pts = rare</span>
+        <span class="rule">1 pt = fréquent · 3 pts = occasionnel · 5 pts = rare${bonusActive ? ' · 🎯 défi bonus réussi = sauve 1 trésor manqué (⭐ dans sa case)' : ''}</span>
       </div>
 
       <div class="sheet-foot">
