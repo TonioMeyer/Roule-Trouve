@@ -664,6 +664,28 @@ button,input,select{font-family:inherit;}
 .hint{font-size:12px;color:var(--ink-soft);width:100%;line-height:1.5;}
 
 /* ============================================================
+   9bis. DÉFIS BONUS (édition)
+   ============================================================ */
+.bonus-list{display:flex;flex-wrap:wrap;gap:8px;}
+.bonus-chip{
+  display:inline-flex;align-items:center;gap:7px;position:relative;
+  padding:8px 10px 8px 12px;border-radius:999px;cursor:pointer;
+  background:var(--chip-bg);border:var(--chip-border);color:var(--chip-ink);
+  font-size:13px;font-weight:600;text-align:left;
+  transition:background var(--tr),border-color var(--tr),color var(--tr);
+}
+.bonus-chip:hover{border-color:var(--accent2);}
+.bonus-chip.on{background:var(--accent2);color:var(--accent2-ink);border-color:var(--accent2-dark);}
+.bonus-chip .emoji{font-size:17px;line-height:1;}
+.bonus-chip .stars{font-size:11px;letter-spacing:1px;white-space:nowrap;opacity:.85;}
+.bonus-chip .rm{
+  border:none;background:rgba(0,0,0,.2);color:inherit;width:17px;height:17px;border-radius:50%;
+  font-size:10px;line-height:1;cursor:pointer;display:grid;place-items:center;margin-left:1px;flex:none;
+}
+.bonus-chip .rm:hover{background:var(--danger);color:#fff;}
+.bonus-count{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);text-transform:none;letter-spacing:0;font-weight:600;}
+
+/* ============================================================
    10. DOCK (barre flottante)
    ============================================================ */
 .dock{
@@ -844,6 +866,33 @@ button,input,select{font-family:inherit;}
 .sheet.half .sheet-score .blank{min-width:10.6mm;height:3.2mm;}
 .sheet.half .sheet-score .rule{font-size:2.25mm;}
 .sheet.half .sheet-foot{display:none;}
+
+/* --- ENCART BONUS (portion dediee, hors grille principale) ---
+   N'apparait que si des defis bonus sont coches. Quand actif, la grille
+   principale perd UNE rangee (33->30 en pleine page, 15->12 en demi-page)
+   pour lui liberer exactement la place d'une rangee + son gap (17mm+1.3mm
+   = 18.3mm). L'encart est fige a 17mm avec overflow cache : meme si trop
+   de defis sont coches, il ne peut jamais deborder sur la page suivante. */
+.sheet-bonus{
+  flex:none;height:17mm;overflow:hidden;margin-top:1.3mm;
+  display:flex;flex-direction:column;gap:.6mm;
+  border:1.5px dashed #c98a25;border-radius:2.1mm;background:#fff8ea;
+  padding:1.1mm 2.2mm;
+}
+.sheet-bonus .sb-title{
+  flex:none;font-family:'Space Mono',monospace;font-weight:700;font-size:2.1mm;
+  letter-spacing:.4px;text-transform:uppercase;color:#a07d2c;
+}
+.sheet-bonus .sb-grid{flex:1;min-height:0;display:flex;flex-wrap:wrap;gap:1mm;overflow:hidden;}
+.sheet-bonus .sb-item{
+  display:flex;align-items:center;gap:1mm;flex:1 1 auto;min-width:40mm;
+  border:1px solid #e6d3a3;background:#fffdf6;border-radius:1.4mm;
+  padding:.5mm 1.4mm;font-size:2.1mm;line-height:1.15;
+}
+.sheet-bonus .sb-item .box{width:2.6mm;height:2.6mm;border:1.3px solid #15202E;border-radius:.7mm;flex:none;background:#fff;}
+.sheet-bonus .sb-item .emoji{font-size:3.4mm;flex:none;line-height:1;}
+.sheet-bonus .sb-item .txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}
+.sheet-bonus .sb-item .star{flex:none;color:#c98a25;font-size:2.1mm;white-space:nowrap;}
 
 /* ============================================================
    12. IMPRESSION
@@ -1031,6 +1080,26 @@ button,input,select{font-family:inherit;}
         </div>
       </section>
 
+      <section class="panel" id="bonusPanel">
+        <p class="panel-title">🌟 Défis bonus (facultatif) <span class="bonus-count" id="bonusCount"></span></p>
+        <p class="hint" style="margin:0 0 12px;">
+          En plus des éléments à repérer, coche des défis bonus à réussir pendant le trajet.
+          Ils sont imprimés à part, avec des étoiles au lieu de points — vise 3-4 défis maxi
+          pour qu'ils tiennent dans leur encart.
+        </p>
+        <div class="bonus-list" id="bonusList"></div>
+        <div class="add-form" style="margin-top:12px;">
+          <input type="text" id="bonusEmoji" placeholder="🔎" maxlength="4" aria-label="Emoji du défi bonus">
+          <input type="text" id="bonusLabel" placeholder="ex : Voir un arc-en-ciel" aria-label="Nom du défi bonus">
+          <select id="bonusStars" aria-label="Nombre d'étoiles">
+            <option value="1">⭐ 1 étoile</option>
+            <option value="2" selected>⭐⭐ 2 étoiles</option>
+            <option value="3">⭐⭐⭐ 3 étoiles</option>
+          </select>
+          <button type="button" class="btn btn-accent" id="addBonusBtn">Ajouter</button>
+        </div>
+      </section>
+
       <div id="categories"></div>
 
       <div class="no-result" id="noResult" style="display:none;">
@@ -1079,7 +1148,7 @@ button,input,select{font-family:inherit;}
 
 <!-- ============ DOCK ============ -->
 <div class="dock no-print" id="dock">
-  <div class="odo">🎯 <b id="countDisplay">0</b> élém. · <b id="ptsDisplay">0</b> pts</div>
+  <div class="odo">🎯 <b id="countDisplay">0</b> élém. · <b id="ptsDisplay">0</b> pts<span id="bonusOdoExtra"></span></div>
   <div class="prog" title="Progression vers l'objectif"><i id="progFill"></i></div>
   <button type="button" class="btn btn-soft btn-sm" id="clearBtn">Vider</button>
   <button type="button" class="btn btn-primary" id="generateBtn">Générer la fiche →</button>
@@ -1219,6 +1288,18 @@ const DEFAULT_ITEMS = [
 ];
 
 const POINTS = {1:1, 2:3, 3:5};
+
+// Défis bonus : liste à part (pas de rareté/points, mais des étoiles 1 à 3).
+// Ils ne comptent pas dans le score de la fiche principale et s'impriment
+// dans un encart dédié (voir .sheet-bonus).
+const DEFAULT_BONUS_ITEMS = [
+  {emoji:"🌈", label:"Voir un arc-en-ciel", stars:3},
+  {emoji:"📵", label:"30 minutes sans écran", stars:3},
+  {emoji:"🎶", label:"Chanter une chanson en entier", stars:1},
+  {emoji:"🅿️", label:"Se garer du premier coup", stars:2},
+  {emoji:"🎁", label:"Deviner qui arrive en premier", stars:1},
+  {emoji:"😴", label:"Personne ne s'endort avant l'arrivée", stars:2},
+];
 
 // --- Icônes réalistes (SVG, viewBox 64x64, taille pilotée en CSS via 1em) ---
 function limitSVG(num){
@@ -1558,6 +1639,8 @@ document.getElementById('ghForgetBtn').addEventListener('click', ()=>{
    ============================================================ */
 let items = DEFAULT_ITEMS.map((it,i)=>({...it, id:"i"+i, selected:false, custom:false}));
 let customCount = 0;
+let bonusItems = DEFAULT_BONUS_ITEMS.map((it,i)=>({...it, id:"bo"+i, selected:false, custom:false}));
+let bonusCustomCount = 0;
 const activeRarities = new Set();   // vide = toutes les raretés
 const activeCats = new Set();       // vide = tous les thèmes
 let searchQuery = "";
@@ -1573,6 +1656,8 @@ function saveState(){
     localStorage.setItem(STATE_KEY, JSON.stringify({
       selected: items.filter(i=>i.selected && !i.custom).map(i=>i.label),
       customs: items.filter(i=>i.custom).map(i=>({emoji:i.emoji, label:i.label, rarity:i.rarity, selected:i.selected})),
+      bonusSelected: bonusItems.filter(b=>b.selected && !b.custom).map(b=>b.label),
+      bonusCustoms: bonusItems.filter(b=>b.custom).map(b=>({emoji:b.emoji, label:b.label, stars:b.stars, selected:b.selected})),
       pilot: document.getElementById('pilotName').value,
       dest: document.getElementById('destination').value,
       target: document.getElementById('targetCount').value
@@ -1590,6 +1675,13 @@ function restoreState(){
     customCount++;
     items.push({cat:"Mes ajouts", emoji:c.emoji, label:c.label, rarity:c.rarity,
                 id:"custom"+customCount, selected:!!c.selected, custom:true});
+  });
+  const bonusSel = new Set(s.bonusSelected || []);
+  bonusItems.forEach(b=>{ if(bonusSel.has(b.label)) b.selected = true; });
+  (s.bonusCustoms || []).forEach(c=>{
+    bonusCustomCount++;
+    bonusItems.push({emoji:c.emoji, label:c.label, stars:c.stars,
+                      id:"bocustom"+bonusCustomCount, selected:!!c.selected, custom:true});
   });
   if(s.pilot) document.getElementById('pilotName').value = s.pilot;
   if(s.dest) document.getElementById('destination').value = s.dest;
@@ -1664,8 +1756,24 @@ function renderSidebar(){
   document.getElementById('resetCats').hidden   = activeCats.size === 0;
 }
 
+/* --- panneau des défis bonus (liste à part, hors catégories/raretés) --- */
+function renderBonus(){
+  const list = document.getElementById('bonusList');
+  list.innerHTML = bonusItems.map(b=>`
+    <button type="button" class="bonus-chip${b.selected?' on':''}" data-id="${b.id}" aria-pressed="${b.selected}">
+      <span class="emoji">${b.emoji}</span>
+      <span>${esc(b.label)}</span>
+      <span class="stars">${'⭐'.repeat(b.stars)}</span>
+      ${b.custom ? `<span class="rm" data-rm="${b.id}" title="Supprimer" aria-label="Supprimer">×</span>` : ''}
+    </button>`).join('');
+  const n = bonusItems.filter(b=>b.selected).length;
+  document.getElementById('bonusCount').textContent = n ? `${n} actif${n>1?'s':''}` : '';
+  document.getElementById('bonusOdoExtra').textContent = n ? ` · ⭐ ${n}` : '';
+}
+
 function render(){
   renderSidebar();
+  renderBonus();
   const cats = [...new Set(items.map(i=>i.cat))];
   categoriesEl.innerHTML = "";
   let totalVisible = 0;
@@ -1864,8 +1972,44 @@ document.getElementById('customLabel').addEventListener('keydown', (e)=>{
   if(e.key === 'Enter') document.getElementById('addBtn').click();
 });
 
+document.getElementById('bonusList').addEventListener('click', (e)=>{
+  const rm = e.target.closest('[data-rm]');
+  if(rm){
+    e.stopPropagation();
+    bonusItems = bonusItems.filter(b=>b.id!==rm.dataset.rm);
+    saveState(); renderBonus();
+    return;
+  }
+  const chip = e.target.closest('.bonus-chip');
+  if(!chip) return;
+  const b = bonusItems.find(x=>x.id===chip.dataset.id);
+  if(b){ b.selected = !b.selected; saveState(); renderBonus(); }
+});
+
+document.getElementById('addBonusBtn').addEventListener('click', ()=>{
+  const emojiInput = document.getElementById('bonusEmoji');
+  const labelInput = document.getElementById('bonusLabel');
+  const starsInput = document.getElementById('bonusStars');
+  const label = labelInput.value.trim();
+  if(!label){ labelInput.focus(); return; }
+  bonusCustomCount++;
+  bonusItems.push({
+    emoji: emojiInput.value.trim() || "⭐",
+    label,
+    stars: parseInt(starsInput.value,10),
+    id:"bocustom"+bonusCustomCount, selected:true, custom:true
+  });
+  emojiInput.value = ""; labelInput.value = "";
+  saveState(); renderBonus(); labelInput.focus();
+  toast(`Défi bonus « ${label} » ajouté 🌟`);
+});
+document.getElementById('bonusLabel').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') document.getElementById('addBonusBtn').click();
+});
+
 function clearAll(){
   items.forEach(i=>i.selected=false);
+  bonusItems.forEach(b=>b.selected=false);
   saveState(); render();
   toast("Sélection vidée");
 }
@@ -1882,10 +2026,36 @@ document.getElementById('targetCount').addEventListener('input', ()=>{ saveState
    ============================================================ */
 let currentSelection = [];
 
+// Rendu de l'encart bonus (portion dédiée, cf. .sheet-bonus dans GEOMETRIE PARTAGEE).
+// Hauteur figée à 17mm + overflow caché : ne peut jamais pousser le contenu
+// sur une page suivante, même si beaucoup de défis sont cochés.
+function renderBonusBlock(list){
+  if(!list.length) return '';
+  return `<div class="sheet-bonus">
+    <div class="sb-title">🌟 Défis bonus</div>
+    <div class="sb-grid">
+      ${list.map(b=>`
+        <div class="sb-item">
+          <span class="box"></span>
+          <span class="emoji">${b.emoji}</span>
+          <span class="txt">${esc(b.label)}</span>
+          <span class="star">${'⭐'.repeat(b.stars)}</span>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
 function buildPreview(){
   const density = document.getElementById('printDensity').value; // 'full' | 'half'
-  // trames fixes (memes cartes dans les deux formats) : 3x11 en pleine page, 3x5 en demi-page
-  const perPage = density === 'half' ? 15 : 33;
+  const bonusSelection = bonusItems.filter(b=>b.selected);
+  const bonusActive = bonusSelection.length > 0;
+  const bonusHtml = renderBonusBlock(bonusSelection);
+  // trames fixes (memes cartes dans les deux formats) : 3x11 en pleine page, 3x5 en demi-page.
+  // Si des defis bonus sont actifs, la grille perd une rangee (33->30 / 15->12)
+  // pour liberer exactement la place de l'encart bonus.
+  const perPage = bonusActive
+    ? (density === 'half' ? 12 : 30)
+    : (density === 'half' ? 15 : 33);
   const pilot = document.getElementById('pilotName').value.trim();
   const dest  = document.getElementById('destination').value.trim();
   const sheetsEl = document.getElementById('sheets');
@@ -1935,6 +2105,8 @@ function buildPreview(){
             </div>`).join('')}
         </div>
 
+        ${bonusHtml}
+
         <div class="sheet-score">
           <span class="cell">Cochés <span class="blank"></span> / ${chunk.length}</span>
           <span class="cell">Points <span class="blank"></span> / ${pagePts}</span>
@@ -1970,6 +2142,8 @@ function buildPreview(){
             <span class="box"></span>
           </div>`).join('')}
       </div>
+
+      ${bonusHtml}
 
       <div class="sheet-score">
         <span class="cell">Cochés sur cette page <span class="blank"></span> / ${chunk.length}</span>
