@@ -4,13 +4,22 @@ Dernière mise à jour : 2026-08-14
 
 ## Contexte du projet
 
-Application web autonome (un seul fichier `chasse-au-tresor.html`) pour créer et
-imprimer une fiche de « chasse au trésor de la route » (jeu d'observation pour
-les trajets en voiture). L'utilisateur choisit des éléments à repérer par la
-fenêtre (véhicules, panneaux, animaux, etc.), chacun ayant une rareté
-(1/3/5 pts), puis génère une fiche imprimable.
+Application web (`chasse-au-tresor.html`) pour créer et imprimer une fiche de
+« chasse au trésor de la route » (jeu d'observation pour les trajets en
+voiture). L'utilisateur choisit des éléments à repérer par la fenêtre
+(véhicules, panneaux, animaux, etc.), chacun ayant une rareté (1/3/5 pts),
+plus optionnellement des défis bonus, puis génère une fiche imprimable.
+
+⚠️ L'app n'est plus un fichier 100% autonome depuis l'externalisation du
+catalogue (voir plus bas) : elle a besoin d'un serveur HTTP pour charger
+`data/items.json`/`data/bonus.json` via `fetch()` (marche sur GitHub Pages ou
+`http-server` en local ; **pas** en ouvrant le fichier en double-clic —
+`fetch()` échoue en `file://`, mais l'app reste utilisable grâce au repli
+intégré, voir plus bas).
 
 Le dépôt contient aussi :
+- `data/items.json`, `data/bonus.json` : catalogue externalisé, éditable
+  depuis l'app (voir section dédiée plus bas)
 - `icons/` : images PNG personnalisées, poussées via l'API GitHub depuis l'app
 - `maquette-demipage-validee.html` : maquette de référence figée du mode demi-page
 - `.git`
@@ -124,6 +133,61 @@ changement sont restées en 128px — il faut les ré-uploader pour bénéficier
 meilleure résolution (d'autant que les images sont désormais affichées à 13mm).
 
 ---
+
+## Catalogue externalisé + publication GitHub (le plus récent chantier)
+
+**Constat de départ** : les modifs faites dans l'interface (changer la rareté
+d'un élément via sa pastille de points, supprimer un élément du catalogue)
+n'étaient sauvegardées que dans le `localStorage` du navigateur — perdues si
+on change d'appareil/navigateur, jamais visibles pour un autre visiteur de la
+page GitHub Pages.
+
+**Solution** : le catalogue (`DEFAULT_ITEMS`/`DEFAULT_BONUS_ITEMS`, toujours
+présents dans le `<script>` comme repli) est maintenant aussi disponible en
+externe dans `data/items.json`/`data/bonus.json`. Au démarrage, `loadCatalog()`
+tente un `fetch()` des deux fichiers ; en cas d'échec (fichier absent,
+`file://`, hors-ligne) elle retombe silencieusement sur les tableaux intégrés
+— l'app reste toujours fonctionnelle, seule la publication devient impossible.
+
+Le flux complet, dans l'ordre :
+1. `initApp()` (tout en bas du script) appelle `loadCatalog()`, construit
+   `items`/`bonusItems` à partir du résultat, **puis seulement** appelle
+   `restoreState()` + `render()` + `initGhFromStorage()`. Avant, ce
+   `restoreState(); render();` tournait de façon synchrone au chargement du
+   script ; il a fallu tout basculer en `async` pour que le catalogue soit prêt
+   avant le premier rendu.
+2. `RARITY_BY_LABEL` (Map label→rareté) n'est plus une constante calculée sur
+   `DEFAULT_ITEMS` mais une variable reconstruite après le fetch, sur la
+   **vraie** base (fetchée ou repli). Sert à ne persister en `localStorage` que
+   les écarts (`rarityOverrides`) par rapport à cette base, pas tout le
+   catalogue.
+3. Modifier une rareté (clic sur la pastille `+N`) ou supprimer un élément du
+   catalogue (croix ×, visible au survol/focus) met à jour `items` en mémoire
+   + `localStorage` **immédiatement**, comme avant — ça marche même sans être
+   connecté à GitHub.
+4. Si connecté à GitHub (même connexion que pour les icônes, modale ⚙️
+   Réglages) et qu'il y a au moins un écart en attente, un bouton
+   **« 📤 Publier le catalogue (N) »** apparaît dans le dock. Il n'apparaît
+   **jamais** si non connecté ou s'il n'y a rien à publier — c'est voulu (pas
+   de bouton qui traîne pour rien).
+5. `publishCatalogToGithub()` reconstruit le catalogue complet à partir de
+   `items` (en excluant les ajouts personnels `custom`), l'encode en base64
+   UTF-8-safe (`utf8ToBase64`, nécessaire pour les accents/emoji — `btoa()`
+   seul plante dessus), et l'écrit dans `data/items.json` via
+   `putFileToGithub()` (helper mutualisé avec `uploadIcon`, extrait de la
+   logique GET-sha-puis-PUT). Au succès : `baseItemsCatalog`/`RARITY_BY_LABEL`
+   sont mis à jour sur le nouveau catalogue et `removedDefaultLabels` est vidé
+   — donc le compteur d'écarts en attente retombe à 0 et le bouton disparaît.
+
+**Ce qui reste volontairement local, jamais publiable** : les ajouts perso
+(section « ➕ Ajouter un élément à toi », `custom:true`), la sélection en
+cours pour un trajet donné, le pseudo/destination/objectif. Seul le catalogue
+de base (rareté, éléments présents) est publiable.
+
+**Non implémenté** : suppression/republication des défis bonus par défaut
+(seuls les défis bonus perso sont supprimables, comme avant). `data/bonus.json`
+existe et est chargé, mais rien ne le republie pour l'instant — à faire si le
+besoin se présente, sur le même modèle que les items.
 
 ## Emplacements clés dans le code
 

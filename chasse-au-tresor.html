@@ -978,8 +978,11 @@ button,input,select{font-family:inherit;}
       <button type="button" class="modal-close" id="settingsClose" aria-label="Fermer">✕</button>
     </div>
     <p class="lead">
-      Connecte le dépôt GitHub du projet pour remplacer les icônes par tes propres images.
-      Un crayon ✏️ apparaît alors sur chaque carte.
+      Connecte le dépôt GitHub du projet pour remplacer les icônes par tes propres images
+      (un crayon ✏️ apparaît alors sur chaque carte) et pour rendre permanents tes
+      changements du catalogue (rareté, suppression d'un élément) — un bouton
+      « 📤 Publier le catalogue » apparaît alors dans la barre du bas dès qu'il y a
+      quelque chose à publier.
     </p>
 
     <div class="field-grid">
@@ -1155,6 +1158,7 @@ button,input,select{font-family:inherit;}
   <div class="odo">🎯 <b id="countDisplay">0</b> élém. · <b id="ptsDisplay">0</b> pts<span id="bonusOdoExtra"></span></div>
   <div class="prog" title="Progression vers l'objectif"><i id="progFill"></i></div>
   <button type="button" class="btn btn-soft btn-sm" id="clearBtn">Vider</button>
+  <button type="button" class="btn btn-accent btn-sm" id="publishCatalogBtn" style="display:none;" title="Rend ces changements permanents pour tout le monde, pas seulement ce navigateur">📤 Publier le catalogue (<span id="publishCount">0</span>)</button>
   <button type="button" class="btn btn-primary" id="generateBtn">Générer la fiche →</button>
 </div>
 
@@ -1293,9 +1297,11 @@ const DEFAULT_ITEMS = [
 
 const POINTS = {1:1, 2:3, 3:5};
 const RARITY_NAMES = {1:"fréquent", 2:"occasionnel", 3:"rare"};
-// Rareté d'origine de chaque élément du catalogue, pour ne persister que
-// les écarts (rarityOverrides) et garder un state léger dans le localStorage.
-const DEFAULT_RARITY_BY_LABEL = new Map(DEFAULT_ITEMS.map(it=>[it.label, it.rarity]));
+// Rareté d'origine de chaque élément du catalogue, pour ne persister que les
+// écarts (rarityOverrides) et garder un state léger. Reconstruite après le
+// chargement du catalogue (voir loadCatalog/initApp) car la "vraie" base
+// peut venir de data/items.json, pas seulement du DEFAULT_ITEMS intégré.
+let RARITY_BY_LABEL = new Map(DEFAULT_ITEMS.map(it=>[it.label, it.rarity]));
 
 // Défis bonus : liste à part, hors rareté/points. Un défi réussi ne rapporte
 // pas une monnaie séparée : il permet de "sauver" un trésor manqué (dessiner
@@ -1526,34 +1532,46 @@ function fileToPngBase64(file){
   });
 }
 
+// Crée ou met à jour un fichier du dépôt via l'API Contents de GitHub.
+// `base64Content` doit déjà être encodé en base64 (image binaire ou texte).
+// Récupère le sha courant du fichier au besoin (l'API GitHub l'exige pour
+// une mise à jour, mais pas pour une création).
+async function putFileToGithub(path, base64Content, message){
+  let sha = null;
+  try{
+    const getRes = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${path}?ref=${encodeURIComponent(gh.branch)}`, {
+      headers: { "Authorization": `token ${gh.token}`, "Accept": "application/vnd.github+json" }
+    });
+    if(getRes.ok){ const j = await getRes.json(); sha = j.sha; }
+  } catch(e){ /* fichier probablement inexistant : on le crée */ }
+
+  const putRes = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${path}`, {
+    method: "PUT",
+    headers: { "Authorization": `token ${gh.token}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message,
+      content: base64Content,
+      branch: gh.branch,
+      ...(sha ? {sha} : {})
+    })
+  });
+  if(!putRes.ok){
+    const errJson = await putRes.json().catch(()=>({}));
+    throw new Error(errJson.message || `Erreur HTTP ${putRes.status}`);
+  }
+}
+// Encodage base64 sûr pour du texte UTF-8 (accents, emoji) — btoa() seul
+// plante hors du Latin1 (voir data/items.json, data/bonus.json).
+function utf8ToBase64(str){
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
 async function uploadIcon(slug, file){
   if(!gh.connected){ setGhStatus("Connecte-toi d'abord à GitHub."); openSettings(); return; }
   setGhStatus(`Envoi de l'image pour « ${slug} »…`);
   try{
     const base64 = await fileToPngBase64(file);
-    const path = `icons/${slug}.png`;
-    let sha = null;
-    try{
-      const getRes = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${path}?ref=${encodeURIComponent(gh.branch)}`, {
-        headers: { "Authorization": `token ${gh.token}`, "Accept": "application/vnd.github+json" }
-      });
-      if(getRes.ok){ const j = await getRes.json(); sha = j.sha; }
-    } catch(e){ /* fichier probablement inexistant : on le crée */ }
-
-    const putRes = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${path}`, {
-      method: "PUT",
-      headers: { "Authorization": `token ${gh.token}`, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: `Mise à jour icône : ${slug}`,
-        content: base64,
-        branch: gh.branch,
-        ...(sha ? {sha} : {})
-      })
-    });
-    if(!putRes.ok){
-      const errJson = await putRes.json().catch(()=>({}));
-      throw new Error(errJson.message || `Erreur HTTP ${putRes.status}`);
-    }
+    await putFileToGithub(`icons/${slug}.png`, base64, `Mise à jour icône : ${slug}`);
     customIcons[slug] = "data:image/png;base64," + base64;
     render();
     setGhStatus(`✅ Image de « ${slug} » mise à jour sur GitHub.`);
@@ -1561,6 +1579,45 @@ async function uploadIcon(slug, file){
   } catch(err){
     console.error(err);
     setGhStatus(`❌ Échec : ${err.message}`);
+  }
+}
+
+// Publie les changements du catalogue (rareté modifiée, élément supprimé)
+// dans data/items.json sur GitHub, pour qu'ils deviennent la référence pour
+// tout le monde (et pas seulement dans le localStorage de ce navigateur).
+// Les ajouts personnels ("Mes ajouts") restent volontairement locaux : ce
+// n'est que le catalogue de base qui est publiable.
+let catalogPublishInFlight = false;
+async function publishCatalogToGithub(){
+  if(catalogPublishInFlight) return;
+  if(!gh.connected){ setGhStatus("Connecte-toi d'abord à GitHub."); openSettings(); return; }
+  const pending = getPendingCatalogChanges();
+  if(!pending.count) return;
+  catalogPublishInFlight = true;
+  const btn = document.getElementById('publishCatalogBtn');
+  if(btn) btn.disabled = true;
+  setGhStatus("Publication du catalogue sur GitHub…");
+  try{
+    const newCatalog = items.filter(i=>!i.custom).map(i=>{
+      const out = {cat:i.cat, emoji:i.emoji, label:i.label, rarity:i.rarity};
+      if(i.icon) out.icon = i.icon;
+      return out;
+    });
+    const message = `Mise à jour du catalogue (${pending.count} changement${pending.count>1?'s':''})`;
+    await putFileToGithub('data/items.json', utf8ToBase64(JSON.stringify(newCatalog, null, 2) + "\n"), message);
+    baseItemsCatalog = newCatalog;
+    RARITY_BY_LABEL = new Map(newCatalog.map(it=>[it.label, it.rarity]));
+    removedDefaultLabels.clear();
+    saveState(); render();
+    setGhStatus(`✅ Catalogue publié sur GitHub (${pending.count} changement${pending.count>1?'s':''}).`);
+    toast("Catalogue publié sur GitHub ✅");
+  } catch(err){
+    console.error(err);
+    setGhStatus(`❌ Échec de la publication : ${err.message}`);
+    toast("Échec de la publication ❌");
+  } finally {
+    catalogPublishInFlight = false;
+    if(btn) btn.disabled = false;
   }
 }
 
@@ -1647,10 +1704,21 @@ document.getElementById('ghForgetBtn').addEventListener('click', ()=>{
 /* ============================================================
    E. ÉTAT DE LA SÉLECTION
    ============================================================ */
-let items = DEFAULT_ITEMS.map((it,i)=>({...it, id:"i"+i, selected:false, custom:false}));
+// items/bonusItems sont peuplés par initApp() une fois le catalogue externe
+// chargé (voir loadCatalog plus bas) — jamais vides en pratique au-delà du
+// tout premier tick, mais rester [] tant que ce n'est pas fait plutôt que de
+// pré-remplir avec DEFAULT_ITEMS évite d'afficher un catalogue qui changerait
+// brusquement sous les yeux si data/items.json diffère du repli intégré.
+let items = [];
 let customCount = 0;
-let bonusItems = DEFAULT_BONUS_ITEMS.map((it,i)=>({...it, id:"bo"+i, selected:false, custom:false}));
+let bonusItems = [];
 let bonusCustomCount = 0;
+// Catalogue de base effectif (data/items.json + data/bonus.json si
+// accessibles, sinon repli sur DEFAULT_ITEMS/DEFAULT_BONUS_ITEMS intégrés).
+// Sert de référence pour calculer rarityOverrides et pour republier après
+// un "Publier sur GitHub" (voir publishCatalogToGithub, section D).
+let baseItemsCatalog = DEFAULT_ITEMS;
+let baseBonusCatalog = DEFAULT_BONUS_ITEMS;
 const removedDefaultLabels = new Set(); // éléments du catalogue supprimés par l'utilisateur
 const activeRarities = new Set();   // vide = toutes les raretés
 const activeCats = new Set();       // vide = tous les thèmes
@@ -1669,7 +1737,7 @@ function saveState(){
       customs: items.filter(i=>i.custom).map(i=>({emoji:i.emoji, label:i.label, rarity:i.rarity, selected:i.selected})),
       removedDefaults: [...removedDefaultLabels],
       rarityOverrides: items
-        .filter(i=>!i.custom && i.rarity !== DEFAULT_RARITY_BY_LABEL.get(i.label))
+        .filter(i=>!i.custom && i.rarity !== RARITY_BY_LABEL.get(i.label))
         .map(i=>({label:i.label, rarity:i.rarity})),
       bonusSelected: bonusItems.filter(b=>b.selected && !b.custom).map(b=>b.label),
       bonusCustoms: bonusItems.filter(b=>b.custom).map(b=>({emoji:b.emoji, label:b.label, selected:b.selected})),
@@ -1710,6 +1778,15 @@ function restoreState(){
   if(s.dest) document.getElementById('destination').value = s.dest;
   if(s.target) document.getElementById('targetCount').value = s.target;
   restoring = false;
+}
+
+// Changements du catalogue de base (rareté modifiée, élément supprimé) pas
+// encore publiés dans data/items.json sur GitHub — pilote l'affichage du
+// bouton "Publier" (voir publishCatalogToGithub, section D).
+function getPendingCatalogChanges(){
+  const overrides = items.filter(i=>!i.custom && i.rarity !== RARITY_BY_LABEL.get(i.label)).length;
+  const removed = removedDefaultLabels.size;
+  return {overrides, removed, count: overrides + removed};
 }
 
 /* ============================================================
@@ -1893,6 +1970,13 @@ function render(){
   progFill.style.width = Math.min(100, Math.round(selectedItems.length / target * 100)) + "%";
   generateBtn.disabled = selectedItems.length < 4;
   generateBtn.title = selectedItems.length < 4 ? "Choisis au moins 4 éléments" : "";
+
+  // Bouton "Publier le catalogue" : visible seulement s'il y a vraiment
+  // quelque chose à publier ET qu'on est connecté à GitHub pour le faire.
+  const pending = getPendingCatalogChanges();
+  const publishBtn = document.getElementById('publishCatalogBtn');
+  publishBtn.style.display = (gh.connected && pending.count > 0) ? 'inline-flex' : 'none';
+  document.getElementById('publishCount').textContent = pending.count;
 }
 
 /* ============================================================
@@ -2041,6 +2125,7 @@ function clearAll(){
 }
 document.getElementById('clearBtn').addEventListener('click', clearAll);
 document.getElementById('clearBtn2').addEventListener('click', clearAll);
+document.getElementById('publishCatalogBtn').addEventListener('click', publishCatalogToGithub);
 
 ['pilotName','destination'].forEach(id=>{
   document.getElementById(id).addEventListener('change', saveState);
@@ -2224,7 +2309,7 @@ document.getElementById('printBtn').addEventListener('click', ()=>window.print()
 /* ============================================================
    I. DÉMARRAGE
    ============================================================ */
-(function initGhFromStorage(){
+function initGhFromStorage(){
   const saved = loadSavedGhConfig();
   if(saved && saved.owner && saved.repo && saved.token){
     document.getElementById('ghRepo').value = `${saved.owner}/${saved.repo}`;
@@ -2234,10 +2319,45 @@ document.getElementById('printBtn').addEventListener('click', ()=>window.print()
     document.getElementById('ghForgetBtn').style.display = 'inline-flex';
     connectGh();
   }
-})();
+}
 
-restoreState();
-render();
+// Charge le catalogue externe (data/items.json, data/bonus.json) — servi
+// par GitHub Pages à côté de cette page. Repli silencieux sur les tableaux
+// intégrés (DEFAULT_ITEMS/DEFAULT_BONUS_ITEMS) si le fetch échoue (ouverture
+// du fichier en double-clic sans serveur, hors-ligne, fichiers absents…) :
+// l'app reste toujours utilisable, seule la publication devient impossible.
+async function loadCatalog(){
+  let baseItems = DEFAULT_ITEMS, baseBonus = DEFAULT_BONUS_ITEMS;
+  try{
+    const [itemsRes, bonusRes] = await Promise.all([
+      fetch('data/items.json'), fetch('data/bonus.json')
+    ]);
+    if(itemsRes.ok){
+      const j = await itemsRes.json();
+      if(Array.isArray(j) && j.length) baseItems = j;
+    }
+    if(bonusRes.ok){
+      const j = await bonusRes.json();
+      if(Array.isArray(j)) baseBonus = j;
+    }
+  } catch(e){
+    console.warn("Catalogue externe (data/items.json, data/bonus.json) indisponible, utilisation du catalogue intégré.", e);
+  }
+  return {baseItems, baseBonus};
+}
+
+async function initApp(){
+  const {baseItems, baseBonus} = await loadCatalog();
+  baseItemsCatalog = baseItems;
+  baseBonusCatalog = baseBonus;
+  RARITY_BY_LABEL = new Map(baseItemsCatalog.map(it=>[it.label, it.rarity]));
+  items = baseItemsCatalog.map((it,i)=>({...it, id:"i"+i, selected:false, custom:false}));
+  bonusItems = baseBonusCatalog.map((it,i)=>({...it, id:"bo"+i, selected:false, custom:false}));
+  restoreState();
+  render();
+  initGhFromStorage();
+}
+initApp();
 </script>
 
 </body>

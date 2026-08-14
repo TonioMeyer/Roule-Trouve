@@ -1,0 +1,735 @@
+[
+  {
+    "cat": "Véhicules",
+    "emoji": "🚗",
+    "icon": "car_rouge",
+    "label": "Voiture rouge",
+    "rarity": 1
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚗",
+    "icon": "car_bleue",
+    "label": "Voiture bleue",
+    "rarity": 1
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚗",
+    "icon": "car_blanche",
+    "label": "Voiture blanche",
+    "rarity": 1
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚗",
+    "icon": "car_noire",
+    "label": "Voiture noire",
+    "rarity": 1
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚗",
+    "icon": "car_grise",
+    "label": "Voiture grise",
+    "rarity": 1
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚗",
+    "icon": "car_jaune",
+    "label": "Voiture jaune",
+    "rarity": 2
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚗",
+    "icon": "car_verte",
+    "label": "Voiture verte",
+    "rarity": 2
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚚",
+    "label": "Camion",
+    "rarity": 1
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🛢️🚚",
+    "label": "Camion-citerne",
+    "rarity": 3
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚐",
+    "label": "Camping-car",
+    "rarity": 2
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🏕️🚗",
+    "label": "Caravane tractée",
+    "rarity": 2
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🏍️",
+    "label": "Moto",
+    "rarity": 1
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🛵",
+    "label": "Scooter",
+    "rarity": 1
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚌",
+    "label": "Bus / Car",
+    "rarity": 1
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚕",
+    "label": "Taxi",
+    "rarity": 2
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚓",
+    "label": "Voiture de police",
+    "rarity": 2
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚒",
+    "label": "Camion de pompiers",
+    "rarity": 3
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚑",
+    "label": "Ambulance",
+    "rarity": 2
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚜",
+    "label": "Tracteur",
+    "rarity": 2
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚲",
+    "label": "Vélo",
+    "rarity": 1
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🏎️",
+    "label": "Voiture décapotable / sport",
+    "rarity": 3
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚂",
+    "label": "Train",
+    "rarity": 2
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "✈️",
+    "label": "Avion dans le ciel",
+    "rarity": 2
+  },
+  {
+    "cat": "Véhicules",
+    "emoji": "🚁",
+    "label": "Hélicoptère",
+    "rarity": 3
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "🚸",
+    "label": "Passage piéton",
+    "rarity": 1
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "🚏",
+    "label": "Arrêt de bus / abribus",
+    "rarity": 1
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "🧯",
+    "icon": "borne_incendie",
+    "label": "Borne à incendie",
+    "rarity": 2
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "🗑️",
+    "icon": "poubelle_jaune",
+    "label": "Poubelle jaune (tri)",
+    "rarity": 1
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "🗑️",
+    "icon": "poubelle_verte",
+    "label": "Poubelle verte",
+    "rarity": 1
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "🗑️",
+    "icon": "poubelle_marron",
+    "label": "Poubelle marron (compost)",
+    "rarity": 2
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "📮",
+    "label": "Boîte aux lettres jaune",
+    "rarity": 2
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "☎️",
+    "label": "Cabine téléphonique",
+    "rarity": 3
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "🪑",
+    "icon": "banc",
+    "label": "Banc public",
+    "rarity": 1
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "⛲",
+    "label": "Fontaine publique",
+    "rarity": 2
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "🕰️",
+    "label": "Horloge / clocher",
+    "rarity": 2
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "🗿",
+    "label": "Statue ou monument",
+    "rarity": 2
+  },
+  {
+    "cat": "Mobilier urbain",
+    "emoji": "🛝",
+    "label": "Aire de jeux",
+    "rarity": 2
+  },
+  {
+    "cat": "Commerces & services",
+    "emoji": "⛽",
+    "label": "Station-service",
+    "rarity": 1
+  },
+  {
+    "cat": "Commerces & services",
+    "emoji": "🚿🚗",
+    "label": "Station de lavage",
+    "rarity": 2
+  },
+  {
+    "cat": "Commerces & services",
+    "emoji": "🛒",
+    "label": "Supermarché",
+    "rarity": 1
+  },
+  {
+    "cat": "Commerces & services",
+    "emoji": "🥖",
+    "label": "Boulangerie",
+    "rarity": 1
+  },
+  {
+    "cat": "Commerces & services",
+    "emoji": "💊",
+    "label": "Pharmacie (croix verte)",
+    "rarity": 1
+  },
+  {
+    "cat": "Commerces & services",
+    "emoji": "🏨",
+    "label": "Hôtel",
+    "rarity": 2
+  },
+  {
+    "cat": "Commerces & services",
+    "emoji": "⛺",
+    "label": "Camping",
+    "rarity": 2
+  },
+  {
+    "cat": "Commerces & services",
+    "emoji": "🍔",
+    "label": "Macdo",
+    "rarity": 2
+  },
+  {
+    "cat": "Commerces & services",
+    "emoji": "🍔",
+    "label": "Burger-king",
+    "rarity": 2
+  },
+  {
+    "cat": "Commerces & services",
+    "emoji": "🔌🚗",
+    "label": "Borne de recharge électrique",
+    "rarity": 2
+  },
+  {
+    "cat": "Commerces & services",
+    "emoji": "🔧",
+    "label": "Garage automobile",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🛑",
+    "icon": "stop",
+    "label": "Panneau stop",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🔺",
+    "icon": "cedez",
+    "label": "Cédez le passage",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "⛔",
+    "icon": "sens_interdit",
+    "label": "Sens interdit",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "3️⃣0️⃣",
+    "icon": "limit_30",
+    "label": "Limitation 30",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "5️⃣0️⃣",
+    "icon": "limit_50",
+    "label": "Limitation 50",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "7️⃣0️⃣",
+    "icon": "limit_70",
+    "label": "Limitation 70",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "9️⃣0️⃣",
+    "icon": "limit_90",
+    "label": "Limitation 90",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "1️⃣1️⃣0️⃣",
+    "icon": "limit_110",
+    "label": "Limitation 110",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "1️⃣3️⃣0️⃣",
+    "icon": "limit_130",
+    "label": "Limitation 130",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "⚪🚫",
+    "icon": "fin_limitation",
+    "label": "Fin de limitation de vitesse",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🚦",
+    "label": "Feu tricolore",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🔁",
+    "icon": "rond_point",
+    "label": "Rond-point",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🚧",
+    "label": "Panneau travaux",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "📷",
+    "icon": "radar",
+    "label": "Radar",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "💳",
+    "icon": "telepeage",
+    "label": "Voie télépéage",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🅿️",
+    "label": "Parking",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🚻",
+    "label": "Aire de repos (panneau)",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🟡📍",
+    "icon": "borne_km_jaune",
+    "label": "Borne kilométrique jaune (départementale)",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🔴📍",
+    "icon": "borne_km_rouge",
+    "label": "Borne kilométrique rouge (nationale)",
+    "rarity": 3
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🔵➡️",
+    "icon": "dir_bleu",
+    "label": "Panneau directionnel bleu (autoroute)",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🟢➡️",
+    "icon": "dir_vert",
+    "label": "Panneau directionnel vert (nationale)",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "⚪➡️",
+    "icon": "dir_blanc",
+    "label": "Panneau directionnel blanc (départementale)",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🏙️",
+    "icon": "entree_ville",
+    "label": "Panneau d'entrée de ville",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🏙️🚫",
+    "icon": "sortie_ville",
+    "label": "Panneau de sortie de ville (barré)",
+    "rarity": 1
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "◆",
+    "icon": "priorite_droite",
+    "label": "Priorité à droite",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "⚠️",
+    "icon": "danger",
+    "label": "Panneau danger / route glissante",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🦌",
+    "label": "Passage d'animaux sauvages",
+    "rarity": 3
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🚫🚗",
+    "icon": "interdiction_depasser",
+    "label": "Interdiction de dépasser (sauf deux-roues)",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "🚫🚚",
+    "icon": "interdiction_depasser_pl",
+    "label": "Interdiction de dépasser (poids lourds >3,5t)",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
+    "emoji": "3️⃣0️⃣🏘️",
+    "icon": "zone30",
+    "label": "Zone 30",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🌈",
+    "label": "Arc-en-ciel",
+    "rarity": 3
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🌉",
+    "label": "Pont",
+    "rarity": 1
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🏞️",
+    "label": "Rivière",
+    "rarity": 1
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "⛰️",
+    "label": "Montagne",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🌻",
+    "label": "Champ de tournesols",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🌾",
+    "label": "Champ de blé",
+    "rarity": 1
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🌲",
+    "label": "Forêt",
+    "rarity": 1
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🍇",
+    "label": "Vignes",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🌀",
+    "label": "Éolienne",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🌅",
+    "label": "Coucher de soleil",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🗼💧",
+    "label": "Château d'eau",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🌽",
+    "label": "Silo agricole",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🎃",
+    "label": "Épouvantail",
+    "rarity": 3
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🐄",
+    "label": "Vache",
+    "rarity": 1
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🐎",
+    "label": "Cheval",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🐑",
+    "label": "Mouton",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🐐",
+    "label": "Chèvre",
+    "rarity": 3
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🐖",
+    "label": "Cochon",
+    "rarity": 3
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🐓",
+    "label": "Poule ou coq",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🐕",
+    "label": "Chien promené",
+    "rarity": 1
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🐈",
+    "label": "Chat",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🦆",
+    "label": "Canard",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🦋",
+    "label": "Papillon",
+    "rarity": 2
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🦢",
+    "label": "Cigogne ou grand oiseau",
+    "rarity": 3
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "⛪",
+    "label": "Église",
+    "rarity": 1
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "🏰",
+    "label": "Château",
+    "rarity": 3
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "🚉",
+    "label": "Gare",
+    "rarity": 2
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "🚂🚧",
+    "label": "Passage à niveau",
+    "rarity": 3
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "🌉🛣️",
+    "label": "Viaduc autoroutier",
+    "rarity": 3
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "🚇",
+    "label": "Tunnel",
+    "rarity": 2
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "⚡",
+    "label": "Pylône électrique",
+    "rarity": 1
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "🖼️",
+    "label": "Panneau publicitaire (4x3)",
+    "rarity": 1
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "🇫🇷",
+    "label": "Drapeau français (mairie)",
+    "rarity": 2
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "🏛️",
+    "label": "Mairie",
+    "rarity": 2
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "🏫",
+    "label": "École",
+    "rarity": 2
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "👮",
+    "label": "Gendarmerie",
+    "rarity": 3
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "🏖️",
+    "label": "Plage",
+    "rarity": 3
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "⛵",
+    "label": "Bateau",
+    "rarity": 3
+  }
+]
