@@ -765,14 +765,27 @@ button,input,select{font-family:inherit;}
   display:flex;flex-direction:column;overflow:hidden;
   padding:18px 22px;
 }
-.sheet.half .sheet-grid{flex:0 0 auto;align-content:start;grid-template-columns:repeat(3,1fr);gap:6px;}
+.sheet.half .sheet-grid{
+  flex:0 0 auto;align-content:start;
+  grid-template-columns:repeat(3,1fr);grid-auto-rows:88px;gap:6px;
+}
 .sheet.half .sheet-top{padding-bottom:8px;margin-bottom:9px;}
 .sheet.half .sheet-mark{width:40px;height:40px;font-size:19px;}
 .sheet.half .sheet-titles h2{font-size:19px;}
 .sheet.half .sheet-fields{margin-bottom:9px;font-size:11px;}
-.sheet.half .sheet-item{padding:7px 8px;font-size:11px;}
-.sheet.half .sheet-item .emoji{font-size:22px;}
-.sheet.half .sheet-score{margin-top:9px;padding:8px 11px;font-size:11px;}
+/* carte : image en grand au centre, texte dessous */
+.sheet.half .sheet-item{
+  flex-direction:column;justify-content:center;align-items:center;text-align:center;
+  padding:5px;gap:3px;height:88px;overflow:hidden;
+}
+.sheet.half .sheet-item .emoji{font-size:40px;line-height:1;order:1;}
+.sheet.half .sheet-item .txt{
+  font-size:10px;line-height:1.15;order:2;flex:none;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.sheet.half .sheet-item .box{position:absolute;top:5px;left:5px;width:16px;height:16px;}
+.sheet.half .sheet-item .pts{top:-6px;right:-4px;}
+.sheet.half .sheet-score{margin-top:auto;padding:8px 11px;font-size:11px;}
 .sheet.half .sheet-foot{margin-top:7px;}
 
 /* ============================================================
@@ -802,7 +815,7 @@ button,input,select{font-family:inherit;}
   }
   .sheet.full .sheet-item{align-items:center;}
 
-  /* DEMI-PAGE : chaque fiche = moitié exacte d'A4 utile, grille qui REMPLIT l'espace */
+  /* DEMI-PAGE : trame FIXE 3 colonnes x 4 rangées, cases dimensionnées (pas d'étirement) */
   .sheet.half{
     height:138mm;min-height:138mm;max-height:138mm;overflow:hidden;
     padding:6mm 7mm !important;
@@ -810,12 +823,28 @@ button,input,select{font-family:inherit;}
     justify-content:flex-start;
   }
   .sheet.half .sheet-grid{
-    flex:1 1 auto;
+    flex:0 0 auto;
     grid-template-columns:repeat(3,1fr);
-    grid-auto-rows:1fr;
-    align-content:stretch;gap:6px;
+    grid-auto-rows:22mm;
+    align-content:start;gap:4px;
   }
-  .sheet.half .sheet-item{align-items:center;}
+  /* carte : image en grand au centre, texte dessous */
+  .sheet.half .sheet-item{
+    flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;padding:3px 4px;gap:2px;border-radius:7px;
+    height:22mm;overflow:hidden;
+  }
+  .sheet.half .sheet-item .emoji{font-size:32px;line-height:1;order:1;}
+  .sheet.half .sheet-item .txt{
+    font-size:8.5px;line-height:1.1;order:2;flex:none;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  /* case à cocher discrète en coin */
+  .sheet.half .sheet-item .box{
+    position:absolute;top:3px;left:3px;
+    width:13px;height:13px;border-width:2px;
+  }
+  .sheet.half .sheet-item .pts{font-size:7.5px;padding:1px 4px;top:-4px;right:-3px;}
   /* en-tête compacté */
   .sheet.half .sheet-top{padding-bottom:6px;margin-bottom:7px;gap:9px;border-bottom-width:2px;}
   .sheet.half .sheet-mark{width:34px;height:34px;font-size:16px;border-width:2px;}
@@ -825,13 +854,8 @@ button,input,select{font-family:inherit;}
   /* champs sur une ligne compacte */
   .sheet.half .sheet-fields{gap:12px;margin-bottom:7px;font-size:10px;}
   .sheet.half .sheet-fields span.line{min-width:80px;font-size:12px;}
-  /* cartes plus petites */
-  .sheet.half .sheet-item{padding:5px 6px;font-size:10px;gap:6px;border-radius:7px;}
-  .sheet.half .sheet-item .box{width:15px;height:15px;border-width:2px;}
-  .sheet.half .sheet-item .emoji{font-size:19px;}
-  .sheet.half .sheet-item .pts{font-size:7.5px;padding:1px 4px;top:-5px;}
-  /* bloc score allégé */
-  .sheet.half .sheet-score{margin-top:6px;padding:6px 9px;font-size:10px;gap:11px;border-width:1.5px;flex:none;}
+  /* bloc score allégé, collé en bas */
+  .sheet.half .sheet-score{margin-top:auto;padding:6px 9px;font-size:10px;gap:11px;border-width:1.5px;flex:none;}
   .sheet.half .sheet-score .blank{min-width:42px;height:13px;}
   .sheet.half .sheet-score .rule{font-size:8.5px;}
   .sheet.half .sheet-foot{margin-top:5px;padding-top:5px;font-size:8.5px;flex:none;}
@@ -1393,7 +1417,7 @@ function fileToPngBase64(file){
     reader.onload = (e)=>{
       const img = new Image();
       img.onload = ()=>{
-        const maxDim = 128;
+        const maxDim = 256;
         let w = img.naturalWidth || maxDim, h = img.naturalHeight || maxDim;
         const scale = Math.min(1, maxDim / Math.max(w,h));
         w = Math.max(1, Math.round(w*scale));
@@ -1863,8 +1887,9 @@ document.getElementById('targetCount').addEventListener('input', ()=>{ saveState
 let currentSelection = [];
 
 function buildPreview(){
-  const perPage = parseInt(document.getElementById('perPage').value,10);
   const density = document.getElementById('printDensity').value; // 'full' | 'half'
+  // en demi-page, la trame est fixe (3 x 4) : 12 cases maxi par fiche
+  const perPage = density === 'half' ? 12 : parseInt(document.getElementById('perPage').value,10);
   const pilot = document.getElementById('pilotName').value.trim();
   const dest  = document.getElementById('destination').value.trim();
   const sheetsEl = document.getElementById('sheets');
