@@ -272,10 +272,13 @@ h1,h2,h3,.display{
 }
 button,input,select{font-family:inherit;}
 /* Listes deroulantes natives : sans color-scheme, le menu ouvert reste blanc
-   en theme sombre (options illisibles jusqu'au survol). */
+   en theme sombre. Les options doivent recevoir des couleurs OPAQUES : le
+   rendu natif ne gere pas la transparence (--field-bg vaut rgba(...,.06) en
+   theme nuit, ce qui se composait sur le blanc systeme = texte illisible). */
 [data-theme="night"]{color-scheme:dark;}
 [data-theme="paper"],[data-theme="retro"],[data-theme="modern"]{color-scheme:light;}
-select option{background:var(--field-bg);color:var(--ink);}
+[data-theme="night"] select option{background-color:#141C2D;color:#E7EEFA;}
+[data-theme="night"] select{background-color:#141C2D;}
 :focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:6px;}
 .wrap{max-width:var(--maxw);margin:0 auto;padding:26px 18px 170px;}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
@@ -1078,13 +1081,6 @@ select option{background:var(--field-bg);color:var(--ink);}
 <div class="dock no-print" id="dock">
   <div class="odo">🎯 <b id="countDisplay">0</b> élém. · <b id="ptsDisplay">0</b> pts</div>
   <div class="prog" title="Progression vers l'objectif"><i id="progFill"></i></div>
-  <label for="perPage">Par page</label>
-  <select id="perPage">
-    <option value="9">9</option>
-    <option value="12" selected>12</option>
-    <option value="16">16</option>
-    <option value="20">20</option>
-  </select>
   <button type="button" class="btn btn-soft btn-sm" id="clearBtn">Vider</button>
   <button type="button" class="btn btn-primary" id="generateBtn">Générer la fiche →</button>
 </div>
@@ -1579,7 +1575,6 @@ function saveState(){
       customs: items.filter(i=>i.custom).map(i=>({emoji:i.emoji, label:i.label, rarity:i.rarity, selected:i.selected})),
       pilot: document.getElementById('pilotName').value,
       dest: document.getElementById('destination').value,
-      perPage: document.getElementById('perPage').value,
       target: document.getElementById('targetCount').value
     }));
   } catch(e){}
@@ -1598,7 +1593,6 @@ function restoreState(){
   });
   if(s.pilot) document.getElementById('pilotName').value = s.pilot;
   if(s.dest) document.getElementById('destination').value = s.dest;
-  if(s.perPage) document.getElementById('perPage').value = s.perPage;
   if(s.target) document.getElementById('targetCount').value = s.target;
   restoring = false;
 }
@@ -1878,7 +1872,7 @@ function clearAll(){
 document.getElementById('clearBtn').addEventListener('click', clearAll);
 document.getElementById('clearBtn2').addEventListener('click', clearAll);
 
-['pilotName','destination','perPage'].forEach(id=>{
+['pilotName','destination'].forEach(id=>{
   document.getElementById(id).addEventListener('change', saveState);
 });
 document.getElementById('targetCount').addEventListener('input', ()=>{ saveState(); render(); });
