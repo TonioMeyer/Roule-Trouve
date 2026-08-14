@@ -613,10 +613,12 @@ button,input,select{font-family:inherit;}
   transform:scale(1.12);
 }
 .pts-chip{
-  position:absolute;top:7px;left:7px;
+  position:absolute;top:7px;left:7px;z-index:4;
   font-family:var(--font-mono);font-size:10px;font-weight:700;color:#fff;
   padding:2px 7px;border-radius:999px;letter-spacing:-.3px;
+  border:none;cursor:pointer;transition:filter var(--tr), transform var(--tr);
 }
+.pts-chip:hover{filter:brightness(1.15);transform:scale(1.06);}
 .pts-chip.r1{background:var(--freq);}
 .pts-chip.r2{background:var(--occ);}
 .pts-chip.r3{background:var(--rare);}
@@ -625,8 +627,13 @@ button,input,select{font-family:inherit;}
   border:none;cursor:pointer;font-size:11px;line-height:1;
   display:grid;place-items:center;z-index:4;
 }
+/* la croix de suppression existe sur toutes les cartes, mais ne s'affiche
+   qu'au survol/focus pour ne pas surcharger visuellement le catalogue —
+   sauf sur les cartes perso, où elle reste toujours visible comme avant. */
 .card .remove-x{top:-9px;left:-9px;background:var(--danger);color:#fff;display:none;}
-.card.custom-card .remove-x{display:grid;}
+.card.custom-card .remove-x,
+.card:hover .remove-x,
+.card:focus-within .remove-x{display:grid;}
 .card .edit-pencil{bottom:-9px;right:-9px;background:var(--card-bg);border:2px solid var(--accent);}
 .card .edit-pencil:hover{background:var(--accent);}
 .card.custom-card{border-style:dotted;}
@@ -1285,6 +1292,10 @@ const DEFAULT_ITEMS = [
 ];
 
 const POINTS = {1:1, 2:3, 3:5};
+const RARITY_NAMES = {1:"fréquent", 2:"occasionnel", 3:"rare"};
+// Rareté d'origine de chaque élément du catalogue, pour ne persister que
+// les écarts (rarityOverrides) et garder un state léger dans le localStorage.
+const DEFAULT_RARITY_BY_LABEL = new Map(DEFAULT_ITEMS.map(it=>[it.label, it.rarity]));
 
 // Défis bonus : liste à part, hors rareté/points. Un défi réussi ne rapporte
 // pas une monnaie séparée : il permet de "sauver" un trésor manqué (dessiner
@@ -1640,6 +1651,7 @@ let items = DEFAULT_ITEMS.map((it,i)=>({...it, id:"i"+i, selected:false, custom:
 let customCount = 0;
 let bonusItems = DEFAULT_BONUS_ITEMS.map((it,i)=>({...it, id:"bo"+i, selected:false, custom:false}));
 let bonusCustomCount = 0;
+const removedDefaultLabels = new Set(); // éléments du catalogue supprimés par l'utilisateur
 const activeRarities = new Set();   // vide = toutes les raretés
 const activeCats = new Set();       // vide = tous les thèmes
 let searchQuery = "";
@@ -1655,6 +1667,10 @@ function saveState(){
     localStorage.setItem(STATE_KEY, JSON.stringify({
       selected: items.filter(i=>i.selected && !i.custom).map(i=>i.label),
       customs: items.filter(i=>i.custom).map(i=>({emoji:i.emoji, label:i.label, rarity:i.rarity, selected:i.selected})),
+      removedDefaults: [...removedDefaultLabels],
+      rarityOverrides: items
+        .filter(i=>!i.custom && i.rarity !== DEFAULT_RARITY_BY_LABEL.get(i.label))
+        .map(i=>({label:i.label, rarity:i.rarity})),
       bonusSelected: bonusItems.filter(b=>b.selected && !b.custom).map(b=>b.label),
       bonusCustoms: bonusItems.filter(b=>b.custom).map(b=>({emoji:b.emoji, label:b.label, selected:b.selected})),
       pilot: document.getElementById('pilotName').value,
@@ -1668,6 +1684,14 @@ function restoreState(){
   try{ s = JSON.parse(localStorage.getItem(STATE_KEY) || "null"); } catch(e){}
   if(!s) return;
   restoring = true;
+  (s.removedDefaults || []).forEach(label=>{
+    removedDefaultLabels.add(label);
+    items = items.filter(i=>i.custom || i.label !== label);
+  });
+  (s.rarityOverrides || []).forEach(o=>{
+    const it = items.find(i=>!i.custom && i.label===o.label);
+    if(it) it.rarity = o.rarity;
+  });
   const sel = new Set(s.selected || []);
   items.forEach(i=>{ if(sel.has(i.label)) i.selected = true; });
   (s.customs || []).forEach(c=>{
@@ -1817,8 +1841,8 @@ function render(){
       card.setAttribute('role','button');
       card.setAttribute('aria-pressed', item.selected);
       card.innerHTML = `
-        ${item.custom ? '<button type="button" class="remove-x" title="Supprimer" aria-label="Supprimer">×</button>' : ''}
-        <span class="pts-chip r${item.rarity}">+${POINTS[item.rarity]}</span>
+        <button type="button" class="remove-x" title="Supprimer" aria-label="Supprimer">×</button>
+        <button type="button" class="pts-chip r${item.rarity}" title="Cliquer pour changer la rareté" aria-label="Rareté : ${RARITY_NAMES[item.rarity]}, cliquer pour changer">+${POINTS[item.rarity]}</button>
         <span class="check" aria-hidden="true">✓</span>
         <span class="emoji">${visual(item)}</span>
         <span class="label">${esc(item.label)}</span>
@@ -1838,7 +1862,13 @@ function render(){
       card.addEventListener('click', (e)=>{
         if(e.target.closest('.edit-pencil') || e.target.closest('.edit-file-input')) return;
         if(e.target.closest('.remove-x')){
+          if(!item.custom) removedDefaultLabels.add(item.label);
           items = items.filter(i=>i.id!==item.id);
+          saveState(); render();
+          return;
+        }
+        if(e.target.closest('.pts-chip')){
+          item.rarity = item.rarity >= 3 ? 1 : item.rarity + 1;
           saveState(); render();
           return;
         }
@@ -2044,13 +2074,13 @@ function buildPreview(){
   const density = document.getElementById('printDensity').value; // 'full' | 'half'
   const bonusSelection = bonusItems.filter(b=>b.selected);
   const bonusActive = bonusSelection.length > 0;
-  const bonusHtml = renderBonusBlock(bonusSelection);
   // trames fixes (memes cartes dans les deux formats) : 3x11 en pleine page, 3x5 en demi-page.
-  // Si des defis bonus sont actifs, la grille perd une rangee (33->30 / 15->12)
-  // pour liberer exactement la place de l'encart bonus.
-  const perPage = bonusActive
-    ? (density === 'half' ? 12 : 30)
-    : (density === 'half' ? 15 : 33);
+  const fullCapacity = density === 'half' ? 15 : 33;
+  // L'encart bonus n'apparait que sur la 1re page (sinon on croirait qu'un
+  // defi peut sauver un tresor a chaque page). Seule cette 1re page perd
+  // donc une rangee (33->30 / 15->12) pour lui liberer la place ; les
+  // pages suivantes gardent la pleine capacite.
+  const firstPageCapacity = bonusActive ? (density === 'half' ? 12 : 30) : fullCapacity;
   const pilot = document.getElementById('pilotName').value.trim();
   const dest  = document.getElementById('destination').value.trim();
   const sheetsEl = document.getElementById('sheets');
@@ -2058,11 +2088,16 @@ function buildPreview(){
 
   const grandTotal = currentSelection.reduce((s,i)=>s+POINTS[i.rarity],0);
   const chunks = [];
-  for(let i=0;i<currentSelection.length;i+=perPage){
-    chunks.push(currentSelection.slice(i,i+perPage));
+  if(currentSelection.length){
+    chunks.push(currentSelection.slice(0, firstPageCapacity));
+    for(let i=firstPageCapacity;i<currentSelection.length;i+=fullCapacity){
+      chunks.push(currentSelection.slice(i,i+fullCapacity));
+    }
   }
 
   chunks.forEach((chunk, idx)=>{
+    const showBonus = bonusActive && idx === 0;
+    const bonusHtml = showBonus ? renderBonusBlock(bonusSelection) : '';
     const pagePts = chunk.reduce((s,i)=>s+POINTS[i.rarity],0);
     const isLast = idx === chunks.length-1;
     const sheet = document.createElement('div');
@@ -2106,7 +2141,7 @@ function buildPreview(){
           <span class="cell">Cochés <span class="blank"></span> / ${chunk.length}</span>
           <span class="cell">Points <span class="blank"></span> / ${pagePts}</span>
           ${chunks.length>1 ? `<span class="cell">Page ${idx+1}/${chunks.length}</span>` : ''}
-          <span class="rule">🟢 1pt · 🟠 3pts · 🔴 5pts${bonusActive ? ' · ⭐ défi bonus réussi = 1 trésor sauvé' : ''}</span>
+          <span class="rule">🟢 1pt · 🟠 3pts · 🔴 5pts${showBonus ? ' · ⭐ défi bonus réussi = 1 trésor sauvé' : ''}</span>
         </div>`;
       sheetsEl.appendChild(sheet);
       return;
@@ -2144,7 +2179,7 @@ function buildPreview(){
         <span class="cell">Cochés sur cette page <span class="blank"></span> / ${chunk.length}</span>
         <span class="cell">Points <span class="blank"></span> / ${pagePts}</span>
         ${isLast && chunks.length>1 ? `<span class="cell">🏆 TOTAL DU TRAJET <span class="blank"></span> / ${grandTotal}</span>` : ''}
-        <span class="rule">1 pt = fréquent · 3 pts = occasionnel · 5 pts = rare${bonusActive ? ' · 🎯 défi bonus réussi = sauve 1 trésor manqué (⭐ dans sa case)' : ''}</span>
+        <span class="rule">1 pt = fréquent · 3 pts = occasionnel · 5 pts = rare${showBonus ? ' · 🎯 défi bonus réussi = sauve 1 trésor manqué (⭐ dans sa case)' : ''}</span>
       </div>
 
       <div class="sheet-foot">
