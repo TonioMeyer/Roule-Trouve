@@ -100,7 +100,7 @@
     "cat": "Véhicules",
     "emoji": "🚓",
     "label": "Voiture de police",
-    "rarity": 2
+    "rarity": 3
   },
   {
     "cat": "Véhicules",
@@ -112,7 +112,7 @@
     "cat": "Véhicules",
     "emoji": "🚑",
     "label": "Ambulance",
-    "rarity": 2
+    "rarity": 3
   },
   {
     "cat": "Véhicules",
