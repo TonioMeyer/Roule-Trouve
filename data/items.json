@@ -2,51 +2,51 @@
   {
     "cat": "Véhicules",
     "emoji": "🚗",
-    "icon": "car_rouge",
     "label": "Voiture rouge",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "car_rouge"
   },
   {
     "cat": "Véhicules",
     "emoji": "🚗",
-    "icon": "car_bleue",
     "label": "Voiture bleue",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "car_bleue"
   },
   {
     "cat": "Véhicules",
     "emoji": "🚗",
-    "icon": "car_blanche",
     "label": "Voiture blanche",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "car_blanche"
   },
   {
     "cat": "Véhicules",
     "emoji": "🚗",
-    "icon": "car_noire",
     "label": "Voiture noire",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "car_noire"
   },
   {
     "cat": "Véhicules",
     "emoji": "🚗",
-    "icon": "car_grise",
     "label": "Voiture grise",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "car_grise"
   },
   {
     "cat": "Véhicules",
     "emoji": "🚗",
-    "icon": "car_jaune",
     "label": "Voiture jaune",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "car_jaune"
   },
   {
     "cat": "Véhicules",
     "emoji": "🚗",
-    "icon": "car_verte",
     "label": "Voiture verte",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "car_verte"
   },
   {
     "cat": "Véhicules",
@@ -58,7 +58,7 @@
     "cat": "Véhicules",
     "emoji": "🛢️🚚",
     "label": "Camion-citerne",
-    "rarity": 3
+    "rarity": 2
   },
   {
     "cat": "Véhicules",
@@ -106,7 +106,7 @@
     "cat": "Véhicules",
     "emoji": "🚒",
     "label": "Camion de pompiers",
-    "rarity": 3
+    "rarity": 1
   },
   {
     "cat": "Véhicules",
@@ -165,30 +165,30 @@
   {
     "cat": "Mobilier urbain",
     "emoji": "🧯",
-    "icon": "borne_incendie",
     "label": "Borne à incendie",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "borne_incendie"
   },
   {
     "cat": "Mobilier urbain",
     "emoji": "🗑️",
-    "icon": "poubelle_jaune",
     "label": "Poubelle jaune (tri)",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "poubelle_jaune"
   },
   {
     "cat": "Mobilier urbain",
     "emoji": "🗑️",
-    "icon": "poubelle_verte",
     "label": "Poubelle verte",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "poubelle_verte"
   },
   {
     "cat": "Mobilier urbain",
     "emoji": "🗑️",
-    "icon": "poubelle_marron",
     "label": "Poubelle marron (compost)",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "poubelle_marron"
   },
   {
     "cat": "Mobilier urbain",
@@ -205,9 +205,9 @@
   {
     "cat": "Mobilier urbain",
     "emoji": "🪑",
-    "icon": "banc",
     "label": "Banc public",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "banc"
   },
   {
     "cat": "Mobilier urbain",
@@ -302,72 +302,72 @@
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🛑",
-    "icon": "stop",
     "label": "Panneau stop",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "stop"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🔺",
-    "icon": "cedez",
     "label": "Cédez le passage",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "cedez"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "⛔",
-    "icon": "sens_interdit",
     "label": "Sens interdit",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "sens_interdit"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "3️⃣0️⃣",
-    "icon": "limit_30",
     "label": "Limitation 30",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "limit_30"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "5️⃣0️⃣",
-    "icon": "limit_50",
     "label": "Limitation 50",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "limit_50"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "7️⃣0️⃣",
-    "icon": "limit_70",
     "label": "Limitation 70",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "limit_70"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "9️⃣0️⃣",
-    "icon": "limit_90",
     "label": "Limitation 90",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "limit_90"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "1️⃣1️⃣0️⃣",
-    "icon": "limit_110",
     "label": "Limitation 110",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "limit_110"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "1️⃣3️⃣0️⃣",
-    "icon": "limit_130",
     "label": "Limitation 130",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "limit_130"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "⚪🚫",
-    "icon": "fin_limitation",
     "label": "Fin de limitation de vitesse",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "fin_limitation"
   },
   {
     "cat": "Panneaux & signalisation",
@@ -378,9 +378,9 @@
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🔁",
-    "icon": "rond_point",
     "label": "Rond-point",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "rond_point"
   },
   {
     "cat": "Panneaux & signalisation",
@@ -391,16 +391,16 @@
   {
     "cat": "Panneaux & signalisation",
     "emoji": "📷",
-    "icon": "radar",
     "label": "Radar",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "radar"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "💳",
-    "icon": "telepeage",
     "label": "Voie télépéage",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "telepeage"
   },
   {
     "cat": "Panneaux & signalisation",
@@ -417,65 +417,65 @@
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🟡📍",
-    "icon": "borne_km_jaune",
     "label": "Borne kilométrique jaune (départementale)",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "borne_km_jaune"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🔴📍",
-    "icon": "borne_km_rouge",
     "label": "Borne kilométrique rouge (nationale)",
-    "rarity": 3
+    "rarity": 3,
+    "icon": "borne_km_rouge"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🔵➡️",
-    "icon": "dir_bleu",
     "label": "Panneau directionnel bleu (autoroute)",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "dir_bleu"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🟢➡️",
-    "icon": "dir_vert",
     "label": "Panneau directionnel vert (nationale)",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "dir_vert"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "⚪➡️",
-    "icon": "dir_blanc",
     "label": "Panneau directionnel blanc (départementale)",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "dir_blanc"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🏙️",
-    "icon": "entree_ville",
     "label": "Panneau d'entrée de ville",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "entree_ville"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🏙️🚫",
-    "icon": "sortie_ville",
     "label": "Panneau de sortie de ville (barré)",
-    "rarity": 1
+    "rarity": 1,
+    "icon": "sortie_ville"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "◆",
-    "icon": "priorite_droite",
     "label": "Priorité à droite",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "priorite_droite"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "⚠️",
-    "icon": "danger",
     "label": "Panneau danger / route glissante",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "danger"
   },
   {
     "cat": "Panneaux & signalisation",
@@ -486,23 +486,23 @@
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🚫🚗",
-    "icon": "interdiction_depasser",
     "label": "Interdiction de dépasser (sauf deux-roues)",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "interdiction_depasser"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🚫🚚",
-    "icon": "interdiction_depasser_pl",
     "label": "Interdiction de dépasser (poids lourds >3,5t)",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "interdiction_depasser_pl"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "3️⃣0️⃣🏘️",
-    "icon": "zone30",
     "label": "Zone 30",
-    "rarity": 2
+    "rarity": 2,
+    "icon": "zone30"
   },
   {
     "cat": "Nature & animaux",
