@@ -451,6 +451,12 @@
   },
   {
     "cat": "Panneaux & signalisation",
+    "emoji": "🟤🐼",
+    "label": "Panneau direction Beauval",
+    "rarity": 3
+  },
+  {
+    "cat": "Panneaux & signalisation",
     "emoji": "🏙️",
     "label": "Panneau d'entrée de ville",
     "rarity": 1,
@@ -539,6 +545,12 @@
     "emoji": "🌾",
     "label": "Champ de blé",
     "rarity": 1
+  },
+  {
+    "cat": "Nature & animaux",
+    "emoji": "🌾🔵",
+    "label": "Botte de foin ronde",
+    "rarity": 2
   },
   {
     "cat": "Nature & animaux",
