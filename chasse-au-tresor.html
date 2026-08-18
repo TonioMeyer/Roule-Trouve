@@ -633,16 +633,22 @@ button,input,select{font-family:inherit;}
 .pts-chip.r1{background:var(--freq);}
 .pts-chip.r2{background:var(--occ);}
 .pts-chip.r3{background:var(--rare);}
-/* pastille multiplicateur (coches multiples) : à droite du pts-chip, en haut à gauche de la carte */
+/* pastille multiplicateur (coches multiples) : sous le pts-chip, en haut à gauche de la carte */
 .mult-chip{
-  position:absolute;top:7px;left:44px;z-index:4;
+  position:absolute;top:32px;left:7px;z-index:4;
   font-family:var(--font-mono);font-size:10px;font-weight:700;
-  color:var(--ink);background:var(--chip-bg);
+  color:var(--ink);background:var(--card-bg);
   padding:2px 7px;border-radius:999px;letter-spacing:-.3px;
-  border:1.5px solid var(--ink);cursor:pointer;transition:filter var(--tr), transform var(--tr);
+  border:1.5px solid var(--ink);cursor:pointer;
+  transition:filter var(--tr), transform var(--tr);
+  box-shadow:0 1px 3px rgba(0,0,0,.25);
 }
-.mult-chip:hover{transform:scale(1.06);}
-.mult-chip.on{background:var(--ink);color:var(--chip-on-ink,#fff);}
+.mult-chip:hover{transform:scale(1.06);filter:brightness(1.05);}
+/* actif (×2/×3) : pastille ambre bien contrastée sur tous les thèmes */
+.mult-chip.on{
+  background:var(--accent2);color:var(--accent2-ink);
+  border-color:var(--accent2-dark);
+}
 .card .remove-x,.card .edit-pencil{
   position:absolute;width:22px;height:22px;border-radius:50%;
   border:none;cursor:pointer;font-size:11px;line-height:1;
