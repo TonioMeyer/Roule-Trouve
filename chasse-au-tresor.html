@@ -450,6 +450,17 @@ button,input,select{font-family:inherit;}
 }
 .trip-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media (max-width:560px){.trip-grid{grid-template-columns:1fr;}}
+/* réglages cadeaux */
+.gift-settings{margin-top:14px;padding-top:14px;border-top:var(--panel-border);}
+.gift-toggle{display:flex;align-items:center;gap:9px;cursor:pointer;font-weight:600;color:var(--ink);font-size:14.5px;}
+.gift-toggle input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;}
+.gift-config{display:none;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;}
+.gift-config.open{display:grid;}
+@media (max-width:560px){.gift-config{grid-template-columns:1fr;}}
+.gift-config select,.gift-config input{
+  width:100%;padding:9px 11px;border-radius:9px;border:var(--field-border);
+  background:var(--field-bg);color:var(--ink);font-size:14px;font-family:inherit;
+}
 .trip-grid .field input{font-family:var(--font-display);font-size:17px;}
 
 /* recherche */
@@ -622,6 +633,16 @@ button,input,select{font-family:inherit;}
 .pts-chip.r1{background:var(--freq);}
 .pts-chip.r2{background:var(--occ);}
 .pts-chip.r3{background:var(--rare);}
+/* pastille multiplicateur (coches multiples) : à droite du pts-chip, en haut à gauche de la carte */
+.mult-chip{
+  position:absolute;top:7px;left:44px;z-index:4;
+  font-family:var(--font-mono);font-size:10px;font-weight:700;
+  color:var(--ink);background:var(--chip-bg);
+  padding:2px 7px;border-radius:999px;letter-spacing:-.3px;
+  border:1.5px solid var(--ink);cursor:pointer;transition:filter var(--tr), transform var(--tr);
+}
+.mult-chip:hover{transform:scale(1.06);}
+.mult-chip.on{background:var(--ink);color:var(--chip-on-ink,#fff);}
 .card .remove-x,.card .edit-pencil{
   position:absolute;width:22px;height:22px;border-radius:50%;
   border:none;cursor:pointer;font-size:11px;line-height:1;
@@ -788,6 +809,17 @@ button,input,select{font-family:inherit;}
 .sheet-score .cell{display:flex;align-items:baseline;gap:8px;font-weight:700;}
 .sheet-score .blank{display:inline-block;min-width:64px;border-bottom:1.5px solid #15202E;height:17px;}
 .sheet-score .rule{margin-left:auto;font-weight:400;color:#6d7a8b;font-size:11px;}
+/* ligne « cadeaux à débloquer » (pleine page) */
+.sheet-gifts{
+  margin-top:10px;border:2px solid var(--accent-dark);border-radius:11px;
+  padding:9px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:#f2f7f4;
+}
+.sheet-gifts .gl-title{font-weight:700;font-size:11.5px;color:var(--accent-dark);text-transform:uppercase;letter-spacing:.5px;}
+.sheet-gifts .gl-items{display:flex;gap:20px;flex-wrap:wrap;flex:1;justify-content:space-around;}
+.sheet-gifts .gift-item{display:flex;align-items:center;gap:7px;font-size:20px;}
+.sheet-gifts .gift-item .box{width:19px;height:19px;border:2.5px solid #15202E;border-radius:5px;background:#fff;}
+.sheet-gifts .gift-item .at{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#41505f;}
 .sheet-foot{
   display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;
   margin-top:12px;padding-top:9px;border-top:1.5px dotted #b9c2cc;
@@ -866,11 +898,24 @@ button,input,select{font-family:inherit;}
 .sheet .sheet-item.r2 .txt .rar{color:var(--occ);}
 .sheet .sheet-item.r3 .txt .rar{color:var(--rare);}
 .sheet .sheet-item .box{position:static;flex:none;order:3;width:5.5mm;height:5.5mm;border-width:2px;border-radius:1.2mm;}
+/* coches multiples : conteneur des cases (1 à 3), aligné à droite */
+.sheet .sheet-item .boxes{order:3;flex:none;display:flex;gap:1mm;align-items:center;}
+.sheet .sheet-item .boxes[data-multi] .box{width:4.6mm;height:4.6mm;}
 .sheet .sheet-item .pts{display:none;}
 /* bandeau bas : juste sous la trame (comme la maquette), pas colle au bas de page */
 .sheet.half .sheet-score{margin-top:2.4mm;padding:1.6mm 2.6mm;font-size:2.5mm;gap:4.2mm;border-width:1.5px;border-radius:1.85mm;flex:none;}
 .sheet.half .sheet-score .blank{min-width:10.6mm;height:3.2mm;}
 .sheet.half .sheet-score .rule{font-size:2.25mm;}
+/* ligne cadeaux compacte (demi-page) */
+.sheet.half .sheet-gifts{
+  margin-top:2.2mm;border:1.5px solid var(--accent-dark);border-radius:1.85mm;
+  padding:1.4mm 2.6mm;gap:2.6mm;
+}
+.sheet.half .sheet-gifts .gl-title{font-size:2.3mm;}
+.sheet.half .sheet-gifts .gl-items{gap:3mm;}
+.sheet.half .sheet-gifts .gift-item{font-size:4.2mm;gap:1.4mm;}
+.sheet.half .sheet-gifts .gift-item .box{width:4mm;height:4mm;border-width:2px;border-radius:1mm;}
+.sheet.half .sheet-gifts .gift-item .at{font-size:2.3mm;}
 .sheet.half .sheet-foot{display:none;}
 
 /* --- ENCART BONUS (portion dediee, hors grille principale) ---
@@ -1089,6 +1134,26 @@ button,input,select{font-family:inherit;}
             <input type="text" id="destination" placeholder="ex : la mer !">
           </div>
         </div>
+
+        <div class="gift-settings">
+          <label class="gift-toggle">
+            <input type="checkbox" id="giftEnabled">
+            <span>🎁 Cadeaux à débloquer par paliers</span>
+          </label>
+          <div class="gift-config" id="giftConfig">
+            <div class="field">
+              <label for="giftCriteria">Critère</label>
+              <select id="giftCriteria">
+                <option value="points" selected>Total de points</option>
+                <option value="count">Nombre d'éléments trouvés</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="giftThresholds">Paliers (séparés par des virgules)</label>
+              <input type="text" id="giftThresholds" placeholder="ex : 20, 40, 60" value="20, 40, 60">
+            </div>
+          </div>
+        </div>
       </section>
 
       <section class="panel" id="bonusPanel">
@@ -1297,6 +1362,12 @@ const DEFAULT_ITEMS = [
 
 const POINTS = {1:1, 2:3, 3:5};
 const RARITY_NAMES = {1:"fréquent", 2:"occasionnel", 3:"rare"};
+// Coches multiples : un item peut être à repérer plusieurs fois (mult 1→3).
+// Les points se cumulent à chaque coche, donc le "vrai" total d'un item vaut
+// sa rarete x son multiplicateur. itemPoints() est la source unique de vérité
+// pour tout calcul de points (score max, total de page).
+function itemMult(it){ const m = it && it.mult ? it.mult|0 : 1; return m<1?1:(m>3?3:m); }
+function itemPoints(it){ return POINTS[it.rarity] * itemMult(it); }
 // Rareté d'origine de chaque élément du catalogue, pour ne persister que les
 // écarts (rarityOverrides) et garder un state léger. Reconstruite après le
 // chargement du catalogue (voir loadCatalog/initApp) car la "vraie" base
@@ -1734,16 +1805,22 @@ function saveState(){
   try{
     localStorage.setItem(STATE_KEY, JSON.stringify({
       selected: items.filter(i=>i.selected && !i.custom).map(i=>i.label),
-      customs: items.filter(i=>i.custom).map(i=>({emoji:i.emoji, label:i.label, rarity:i.rarity, selected:i.selected})),
+      customs: items.filter(i=>i.custom).map(i=>({emoji:i.emoji, label:i.label, rarity:i.rarity, mult:itemMult(i), selected:i.selected})),
       removedDefaults: [...removedDefaultLabels],
       rarityOverrides: items
         .filter(i=>!i.custom && i.rarity !== RARITY_BY_LABEL.get(i.label))
         .map(i=>({label:i.label, rarity:i.rarity})),
+      multOverrides: items
+        .filter(i=>!i.custom && itemMult(i) > 1)
+        .map(i=>({label:i.label, mult:itemMult(i)})),
       bonusSelected: bonusItems.filter(b=>b.selected && !b.custom).map(b=>b.label),
       bonusCustoms: bonusItems.filter(b=>b.custom).map(b=>({emoji:b.emoji, label:b.label, selected:b.selected})),
       pilot: document.getElementById('pilotName').value,
       dest: document.getElementById('destination').value,
-      target: document.getElementById('targetCount').value
+      target: document.getElementById('targetCount').value,
+      giftEnabled: document.getElementById('giftEnabled').checked,
+      giftCriteria: document.getElementById('giftCriteria').value,
+      giftThresholds: document.getElementById('giftThresholds').value
     }));
   } catch(e){}
 }
@@ -1760,11 +1837,15 @@ function restoreState(){
     const it = items.find(i=>!i.custom && i.label===o.label);
     if(it) it.rarity = o.rarity;
   });
+  (s.multOverrides || []).forEach(o=>{
+    const it = items.find(i=>!i.custom && i.label===o.label);
+    if(it) it.mult = o.mult;
+  });
   const sel = new Set(s.selected || []);
   items.forEach(i=>{ if(sel.has(i.label)) i.selected = true; });
   (s.customs || []).forEach(c=>{
     customCount++;
-    items.push({cat:"Mes ajouts", emoji:c.emoji, label:c.label, rarity:c.rarity,
+    items.push({cat:"Mes ajouts", emoji:c.emoji, label:c.label, rarity:c.rarity, mult:c.mult||1,
                 id:"custom"+customCount, selected:!!c.selected, custom:true});
   });
   const bonusSel = new Set(s.bonusSelected || []);
@@ -1777,6 +1858,10 @@ function restoreState(){
   if(s.pilot) document.getElementById('pilotName').value = s.pilot;
   if(s.dest) document.getElementById('destination').value = s.dest;
   if(s.target) document.getElementById('targetCount').value = s.target;
+  if(typeof s.giftEnabled === 'boolean') document.getElementById('giftEnabled').checked = s.giftEnabled;
+  if(s.giftCriteria) document.getElementById('giftCriteria').value = s.giftCriteria;
+  if(typeof s.giftThresholds === 'string') document.getElementById('giftThresholds').value = s.giftThresholds;
+  syncGiftConfig();
   restoring = false;
 }
 
@@ -1920,6 +2005,7 @@ function render(){
       card.innerHTML = `
         <button type="button" class="remove-x" title="Supprimer" aria-label="Supprimer">×</button>
         <button type="button" class="pts-chip r${item.rarity}" title="Cliquer pour changer la rareté" aria-label="Rareté : ${RARITY_NAMES[item.rarity]}, cliquer pour changer">+${POINTS[item.rarity]}</button>
+        <button type="button" class="mult-chip${itemMult(item)>1?' on':''}" title="Nombre de fois à repérer (cliquer pour changer)" aria-label="À repérer ${itemMult(item)} fois, cliquer pour changer">×${itemMult(item)}</button>
         <span class="check" aria-hidden="true">✓</span>
         <span class="emoji">${visual(item)}</span>
         <span class="label">${esc(item.label)}</span>
@@ -1949,6 +2035,11 @@ function render(){
           saveState(); render();
           return;
         }
+        if(e.target.closest('.mult-chip')){
+          item.mult = itemMult(item) >= 3 ? 1 : itemMult(item) + 1;
+          saveState(); render();
+          return;
+        }
         item.selected = !item.selected;
         saveState(); render();
       });
@@ -1963,7 +2054,7 @@ function render(){
   noResultEl.style.display = totalVisible ? 'none' : 'block';
 
   const selectedItems = items.filter(i=>i.selected);
-  const pts = selectedItems.reduce((s,i)=>s+POINTS[i.rarity],0);
+  const pts = selectedItems.reduce((s,i)=>s+itemPoints(i),0);
   countDisplay.textContent = selectedItems.length;
   ptsDisplay.textContent = pts;
   const target = Math.max(1, parseInt(document.getElementById('targetCount').value,10) || 20);
@@ -2132,6 +2223,15 @@ document.getElementById('publishCatalogBtn').addEventListener('click', publishCa
 });
 document.getElementById('targetCount').addEventListener('input', ()=>{ saveState(); render(); });
 
+// Réglages cadeaux : toggle (affiche/masque la config) + persistance.
+function syncGiftConfig(){
+  const on = document.getElementById('giftEnabled').checked;
+  document.getElementById('giftConfig').classList.toggle('open', on);
+}
+document.getElementById('giftEnabled').addEventListener('change', ()=>{ syncGiftConfig(); saveState(); });
+document.getElementById('giftCriteria').addEventListener('change', saveState);
+document.getElementById('giftThresholds').addEventListener('input', saveState);
+
 /* ============================================================
    H. FICHE IMPRIMABLE
    ============================================================ */
@@ -2140,6 +2240,43 @@ let currentSelection = [];
 // Rendu de l'encart bonus (portion dédiée, cf. .sheet-bonus dans GEOMETRIE PARTAGEE).
 // Hauteur figée à 17mm + overflow caché : ne peut jamais pousser le contenu
 // sur une page suivante, même si beaucoup de défis sont cochés.
+// Cases à cocher d'un item sur la fiche : autant que son multiplicateur (1→3).
+function boxesHtml(it){
+  const n = itemMult(it);
+  let s = '';
+  for(let k=0;k<n;k++) s += '<span class="box"></span>';
+  return `<span class="boxes"${n>1?' data-multi="1"':''}>${s}</span>`;
+}
+// Suffixe ×n ajouté au libellé quand l'item est à repérer plusieurs fois.
+function multSuffix(it){
+  const n = itemMult(it);
+  return n>1 ? ` · ×${n}` : '';
+}
+// Lecture des réglages « cadeaux à débloquer » depuis l'UI.
+// Renvoie {enabled, criteria:'points'|'count', thresholds:[nombres triés]}.
+function getGiftConfig(){
+  const enabled = document.getElementById('giftEnabled').checked;
+  const criteria = document.getElementById('giftCriteria').value;
+  const thresholds = (document.getElementById('giftThresholds').value || '')
+    .split(/[,;]/).map(s=>parseInt(s.trim(),10))
+    .filter(n=>Number.isFinite(n) && n>0)
+    .sort((a,b)=>a-b);
+  return {enabled: enabled && thresholds.length>0, criteria, thresholds};
+}
+// Ligne « cadeaux à débloquer » insérée dans le bandeau score : une case à
+// cocher + un 🎁 + le seuil, pour chaque palier. L'enfant ne connaît pas la
+// récompense (à décider au dernier moment), juste le seuil à atteindre.
+function renderGiftLine(cfg){
+  if(!cfg.enabled) return '';
+  const unit = cfg.criteria === 'points' ? 'pts' : '';
+  const items = cfg.thresholds.map(t=>`
+    <span class="gift-item"><span class="box"></span>🎁<span class="at">${t}${unit?(' '+unit):''}</span></span>`).join('');
+  return `<div class="sheet-gifts">
+    <span class="gl-title">🎁 Cadeaux à débloquer</span>
+    <span class="gl-items">${items}</span>
+  </div>`;
+}
+
 function renderBonusBlock(list){
   if(!list.length) return '';
   return `<div class="sheet-bonus">
@@ -2168,10 +2305,11 @@ function buildPreview(){
   const firstPageCapacity = bonusActive ? (density === 'half' ? 12 : 30) : fullCapacity;
   const pilot = document.getElementById('pilotName').value.trim();
   const dest  = document.getElementById('destination').value.trim();
+  const giftCfg = getGiftConfig();
   const sheetsEl = document.getElementById('sheets');
   sheetsEl.innerHTML = "";
 
-  const grandTotal = currentSelection.reduce((s,i)=>s+POINTS[i.rarity],0);
+  const grandTotal = currentSelection.reduce((s,i)=>s+itemPoints(i),0);
   const chunks = [];
   if(currentSelection.length){
     chunks.push(currentSelection.slice(0, firstPageCapacity));
@@ -2183,8 +2321,11 @@ function buildPreview(){
   chunks.forEach((chunk, idx)=>{
     const showBonus = bonusActive && idx === 0;
     const bonusHtml = showBonus ? renderBonusBlock(bonusSelection) : '';
-    const pagePts = chunk.reduce((s,i)=>s+POINTS[i.rarity],0);
+    const pagePts = chunk.reduce((s,i)=>s+itemPoints(i),0);
     const isLast = idx === chunks.length-1;
+    // les cadeaux (seuils sur le total du trajet) n'apparaissent que sur la
+    // dernière page, là où le total se calcule.
+    const giftHtml = (isLast && giftCfg.enabled) ? renderGiftLine(giftCfg) : '';
     const sheet = document.createElement('div');
     sheet.className = "sheet " + density;
     // en demi-page : saut de feuille après chaque paire de fiches
@@ -2215,8 +2356,8 @@ function buildPreview(){
           ${chunk.map(it=>`
             <div class="sheet-item r${it.rarity}">
               <span class="emoji">${visual(it)}</span>
-              <span class="txt"><span class="lab">${esc(it.label)}</span><span class="rar">+${POINTS[it.rarity]} pt</span></span>
-              <span class="box"></span>
+              <span class="txt"><span class="lab">${esc(it.label)}</span><span class="rar">+${POINTS[it.rarity]} pt${multSuffix(it)}</span></span>
+              ${boxesHtml(it)}
             </div>`).join('')}
         </div>
 
@@ -2227,7 +2368,8 @@ function buildPreview(){
           <span class="cell">Points <span class="blank"></span> / ${pagePts}</span>
           ${chunks.length>1 ? `<span class="cell">Page ${idx+1}/${chunks.length}</span>` : ''}
           <span class="rule">🟢 1pt · 🟠 3pts · 🔴 5pts${showBonus ? ' · ⭐ défi bonus réussi = 1 trésor sauvé' : ''}</span>
-        </div>`;
+        </div>
+        ${giftHtml}`;
       sheetsEl.appendChild(sheet);
       return;
     }
@@ -2253,8 +2395,8 @@ function buildPreview(){
         ${chunk.map(it=>`
           <div class="sheet-item r${it.rarity}">
             <span class="emoji">${visual(it)}</span>
-            <span class="txt"><span class="lab">${esc(it.label)}</span><span class="rar">+${POINTS[it.rarity]} pt</span></span>
-            <span class="box"></span>
+            <span class="txt"><span class="lab">${esc(it.label)}</span><span class="rar">+${POINTS[it.rarity]} pt${multSuffix(it)}</span></span>
+            ${boxesHtml(it)}
           </div>`).join('')}
       </div>
 
@@ -2266,6 +2408,8 @@ function buildPreview(){
         ${isLast && chunks.length>1 ? `<span class="cell">🏆 TOTAL DU TRAJET <span class="blank"></span> / ${grandTotal}</span>` : ''}
         <span class="rule">1 pt = fréquent · 3 pts = occasionnel · 5 pts = rare${showBonus ? ' · 🎯 défi bonus réussi = sauve 1 trésor manqué (⭐ dans sa case)' : ''}</span>
       </div>
+
+      ${giftHtml}
 
       <div class="sheet-foot">
         <span>${esc(pilot) ? "Copilote : " + esc(pilot) : "Chasse au trésor de la route"}</span>
