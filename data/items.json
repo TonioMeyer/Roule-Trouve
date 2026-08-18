@@ -457,6 +457,12 @@
   },
   {
     "cat": "Panneaux & signalisation",
+    "emoji": "🐼",
+    "label": "Fin interdiction dépasser",
+    "rarity": 2
+  },
+  {
+    "cat": "Panneaux & signalisation",
     "emoji": "🏙️",
     "label": "Panneau d'entrée de ville",
     "rarity": 1,
