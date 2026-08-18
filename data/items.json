@@ -749,5 +749,11 @@
     "emoji": "⛵",
     "label": "Bateau",
     "rarity": 3
+  },
+  {
+    "cat": "Infrastructures & patrimoine",
+    "emoji": "⛵",
+    "label": "Volets Bleus",
+    "rarity": 3
   }
 ]
