@@ -425,7 +425,7 @@
     "cat": "Panneaux & signalisation",
     "emoji": "🔴📍",
     "label": "Borne kilométrique rouge (nationale)",
-    "rarity": 3,
+    "rarity": 1,
     "icon": "borne_km_rouge"
   },
   {
@@ -544,7 +544,7 @@
     "cat": "Nature & animaux",
     "emoji": "🌻",
     "label": "Champ de tournesols",
-    "rarity": 2
+    "rarity": 3
   },
   {
     "cat": "Nature & animaux",
