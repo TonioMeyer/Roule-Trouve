@@ -461,6 +461,15 @@ button,input,select{font-family:inherit;}
   width:100%;padding:9px 11px;border-radius:9px;border:var(--field-border);
   background:var(--field-bg);color:var(--ink);font-size:14px;font-family:inherit;
 }
+.gift-preview{margin-top:12px;font-size:13px;color:var(--ink-soft);display:none;}
+.gift-preview.open{display:block;}
+.gift-preview .plist{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.gift-preview .pill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--accent-soft,rgba(47,110,79,.12));color:var(--accent-dark);
+  padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:600;
+}
+.gift-preview .pill small{font-weight:400;opacity:.75;}
 .trip-grid .field input{font-family:var(--font-display);font-size:17px;}
 
 /* recherche */
@@ -813,6 +822,7 @@ button,input,select{font-family:inherit;}
   display:flex;gap:20px;flex-wrap:wrap;align-items:center;font-size:12.5px;
 }
 .sheet-score .cell{display:flex;align-items:baseline;gap:8px;font-weight:700;}
+.sheet-score .cell.tot{color:var(--accent-dark);}
 .sheet-score .blank{display:inline-block;min-width:64px;border-bottom:1.5px solid #15202E;height:17px;}
 .sheet-score .rule{margin-left:auto;font-weight:400;color:#6d7a8b;font-size:11px;}
 /* ligne « cadeaux à débloquer » (pleine page) */
@@ -1151,14 +1161,19 @@ button,input,select{font-family:inherit;}
               <label for="giftCriteria">Critère</label>
               <select id="giftCriteria">
                 <option value="points" selected>Total de points</option>
-                <option value="count">Nombre d'éléments trouvés</option>
+                <option value="count">Nombre d'objets trouvés</option>
               </select>
             </div>
-            <div class="field">
-              <label for="giftThresholds">Paliers (séparés par des virgules)</label>
+            <div class="field" id="giftFieldThresholds">
+              <label for="giftThresholds">Paliers de points (séparés par des virgules)</label>
               <input type="text" id="giftThresholds" placeholder="ex : 20, 40, 60" value="20, 40, 60">
             </div>
+            <div class="field" id="giftFieldCount" style="display:none;">
+              <label for="giftCount">Nombre de cadeaux</label>
+              <input type="number" id="giftCount" min="1" max="8" value="3">
+            </div>
           </div>
+          <div class="gift-preview" id="giftPreview"></div>
         </div>
       </section>
 
@@ -1376,6 +1391,8 @@ const RARITY_NAMES = {1:"fréquent", 2:"occasionnel", 3:"rare"};
 // pour tout calcul de points (score max, total de page).
 function itemMult(it){ const m = it && it.mult ? it.mult|0 : 1; return m<1?1:(m>3?3:m); }
 function itemPoints(it){ return POINTS[it.rarity] * itemMult(it); }
+// Nombre de coches d'un item (= son multiplicateur) : un item ×3 vaut 3 objets à trouver.
+function itemChecks(it){ return itemMult(it); }
 // Rareté d'origine de chaque élément du catalogue, pour ne persister que les
 // écarts (rarityOverrides) et garder un state léger. Reconstruite après le
 // chargement du catalogue (voir loadCatalog/initApp) car la "vraie" base
@@ -1828,7 +1845,8 @@ function saveState(){
       target: document.getElementById('targetCount').value,
       giftEnabled: document.getElementById('giftEnabled').checked,
       giftCriteria: document.getElementById('giftCriteria').value,
-      giftThresholds: document.getElementById('giftThresholds').value
+      giftThresholds: document.getElementById('giftThresholds').value,
+      giftCount: document.getElementById('giftCount').value
     }));
   } catch(e){}
 }
@@ -1869,6 +1887,7 @@ function restoreState(){
   if(typeof s.giftEnabled === 'boolean') document.getElementById('giftEnabled').checked = s.giftEnabled;
   if(s.giftCriteria) document.getElementById('giftCriteria').value = s.giftCriteria;
   if(typeof s.giftThresholds === 'string') document.getElementById('giftThresholds').value = s.giftThresholds;
+  if(s.giftCount != null) document.getElementById('giftCount').value = s.giftCount;
   syncGiftConfig();
   restoring = false;
 }
@@ -1966,6 +1985,7 @@ function renderBonus(){
 function render(){
   renderSidebar();
   renderBonus();
+  if(typeof renderGiftPreview === 'function' && document.getElementById('giftPreview')) renderGiftPreview();
   const cats = [...new Set(items.map(i=>i.cat))];
   categoriesEl.innerHTML = "";
   let totalVisible = 0;
@@ -2235,10 +2255,41 @@ document.getElementById('targetCount').addEventListener('input', ()=>{ saveState
 function syncGiftConfig(){
   const on = document.getElementById('giftEnabled').checked;
   document.getElementById('giftConfig').classList.toggle('open', on);
+  const criteria = document.getElementById('giftCriteria').value;
+  const isCount = criteria === 'count';
+  // affiche le bon champ selon le critère
+  document.getElementById('giftFieldCount').style.display = isCount ? '' : 'none';
+  document.getElementById('giftFieldThresholds').style.display = isCount ? 'none' : '';
+  renderGiftPreview();
+}
+// Aperçu en direct des paliers calculés (visible seulement quand les cadeaux sont actifs).
+function renderGiftPreview(){
+  const box = document.getElementById('giftPreview');
+  if(!document.getElementById('giftEnabled').checked){ box.classList.remove('open'); return; }
+  // total d'objets à trouver = coches cumulées des items sélectionnés (item ×n compris)
+  const objTotal = items.filter(i=>i.selected).reduce((s,i)=>s+itemChecks(i),0);
+  const cfg = getGiftConfig(objTotal);
+  if(!cfg.enabled || !cfg.thresholds.length){ box.classList.remove('open'); box.innerHTML=''; return; }
+  const unit = cfg.criteria === 'points' ? ' pts' : ' obj';
+  let intro;
+  if(cfg.criteria === 'count'){
+    const n = cfg.thresholds.length;
+    intro = `Sur ${objTotal} objet${objTotal>1?'s':''} sélectionné${objTotal>1?'s':''}, répartis en ${n} paquet${n>1?'s':''} — un cadeau par paquet complété :`;
+  } else {
+    intro = 'Cadeaux débloqués en atteignant ces totaux de points :';
+  }
+  const pills = cfg.thresholds.map((t,i)=>{
+    const prev = i===0?0:cfg.thresholds[i-1];
+    const extra = cfg.criteria==='count' ? ` <small>(${t-prev} obj)</small>` : '';
+    return `<span class="pill">🎁 ${t}${unit}${extra}</span>`;
+  }).join('');
+  box.innerHTML = `<div>${intro}</div><div class="plist">${pills}</div>`;
+  box.classList.add('open');
 }
 document.getElementById('giftEnabled').addEventListener('change', ()=>{ syncGiftConfig(); saveState(); });
-document.getElementById('giftCriteria').addEventListener('change', saveState);
-document.getElementById('giftThresholds').addEventListener('input', saveState);
+document.getElementById('giftCriteria').addEventListener('change', ()=>{ syncGiftConfig(); saveState(); });
+document.getElementById('giftThresholds').addEventListener('input', ()=>{ renderGiftPreview(); saveState(); });
+document.getElementById('giftCount').addEventListener('input', ()=>{ renderGiftPreview(); saveState(); });
 
 /* ============================================================
    H. FICHE IMPRIMABLE
@@ -2260,15 +2311,41 @@ function multSuffix(it){
   const n = itemMult(it);
   return n>1 ? ` · ×${n}` : '';
 }
+// Répartit `total` objets en `n` paquets cumulés de taille ~égale, petits
+// paquets d'abord (le reste va aux derniers). Renvoie les seuils cumulés.
+// Ex : total=67, n=3 -> [22,44,67] ; total=20, n=3 -> [6,13,20].
+function giftTranches(total, n){
+  n = Math.max(1, Math.min(8, n|0));
+  total = Math.max(0, total|0);
+  const base = Math.floor(total / n);
+  const reste = total - base*n;      // ces `reste` derniers paquets ont +1
+  const cumule = [];
+  let seuil = 0;
+  for(let i=0;i<n;i++){
+    const taille = base + (i >= n-reste ? 1 : 0);
+    seuil += taille;
+    cumule.push(seuil);
+  }
+  return cumule;
+}
 // Lecture des réglages « cadeaux à débloquer » depuis l'UI.
-// Renvoie {enabled, criteria:'points'|'count', thresholds:[nombres triés]}.
-function getGiftConfig(){
+// Pour le critère 'points' : seuils saisis à la main.
+// Pour le critère 'count'  : l'utilisateur choisit un NOMBRE de cadeaux, et
+//   l'appli calcule les seuils en répartissant `objTotal` objets en paquets.
+// `objTotal` = nombre total d'objets à trouver (coches cumulées, item ×n compris).
+function getGiftConfig(objTotal){
   const enabled = document.getElementById('giftEnabled').checked;
   const criteria = document.getElementById('giftCriteria').value;
-  const thresholds = (document.getElementById('giftThresholds').value || '')
-    .split(/[,;]/).map(s=>parseInt(s.trim(),10))
-    .filter(n=>Number.isFinite(n) && n>0)
-    .sort((a,b)=>a-b);
+  let thresholds;
+  if(criteria === 'count'){
+    const n = parseInt(document.getElementById('giftCount').value,10) || 0;
+    thresholds = (n>0 && objTotal>0) ? giftTranches(objTotal, n) : [];
+  } else {
+    thresholds = (document.getElementById('giftThresholds').value || '')
+      .split(/[,;]/).map(s=>parseInt(s.trim(),10))
+      .filter(v=>Number.isFinite(v) && v>0)
+      .sort((a,b)=>a-b);
+  }
   return {enabled: enabled && thresholds.length>0, criteria, thresholds};
 }
 // Ligne « cadeaux à débloquer » insérée dans le bandeau score : une case à
@@ -2276,11 +2353,12 @@ function getGiftConfig(){
 // récompense (à décider au dernier moment), juste le seuil à atteindre.
 function renderGiftLine(cfg){
   if(!cfg.enabled) return '';
-  const unit = cfg.criteria === 'points' ? 'pts' : '';
+  const unit = cfg.criteria === 'points' ? ' pts' : '';
   const items = cfg.thresholds.map(t=>`
-    <span class="gift-item"><span class="box"></span>🎁<span class="at">${t}${unit?(' '+unit):''}</span></span>`).join('');
+    <span class="gift-item"><span class="box"></span>🎁<span class="at">${t}${unit}</span></span>`).join('');
+  const legend = cfg.criteria === 'points' ? 'points' : 'objets trouvés';
   return `<div class="sheet-gifts">
-    <span class="gl-title">🎁 Cadeaux à débloquer</span>
+    <span class="gl-title">🎁 Cadeaux à débloquer <small>(${legend})</small></span>
     <span class="gl-items">${items}</span>
   </div>`;
 }
@@ -2313,11 +2391,13 @@ function buildPreview(){
   const firstPageCapacity = bonusActive ? (density === 'half' ? 12 : 30) : fullCapacity;
   const pilot = document.getElementById('pilotName').value.trim();
   const dest  = document.getElementById('destination').value.trim();
-  const giftCfg = getGiftConfig();
   const sheetsEl = document.getElementById('sheets');
   sheetsEl.innerHTML = "";
 
   const grandTotal = currentSelection.reduce((s,i)=>s+itemPoints(i),0);
+  const grandChecks = currentSelection.reduce((s,i)=>s+itemChecks(i),0);
+  // les cadeaux « par objets » ont besoin du total d'objets pour calculer les paquets.
+  const giftCfg = getGiftConfig(grandChecks);
   const chunks = [];
   if(currentSelection.length){
     chunks.push(currentSelection.slice(0, firstPageCapacity));
@@ -2330,6 +2410,7 @@ function buildPreview(){
     const showBonus = bonusActive && idx === 0;
     const bonusHtml = showBonus ? renderBonusBlock(bonusSelection) : '';
     const pagePts = chunk.reduce((s,i)=>s+itemPoints(i),0);
+    const pageChecks = chunk.reduce((s,i)=>s+itemChecks(i),0);
     const isLast = idx === chunks.length-1;
     // les cadeaux (seuils sur le total du trajet) n'apparaissent que sur la
     // dernière page, là où le total se calcule.
@@ -2372,10 +2453,11 @@ function buildPreview(){
         ${bonusHtml}
 
         <div class="sheet-score">
-          <span class="cell">Cochés <span class="blank"></span> / ${chunk.length}</span>
+          <span class="cell">Objets <span class="blank"></span> / ${pageChecks}</span>
           <span class="cell">Points <span class="blank"></span> / ${pagePts}</span>
           ${chunks.length>1 ? `<span class="cell">Page ${idx+1}/${chunks.length}</span>` : ''}
-          <span class="rule">🟢 1pt · 🟠 3pts · 🔴 5pts${showBonus ? ' · ⭐ défi bonus réussi = 1 trésor sauvé' : ''}</span>
+          ${isLast && chunks.length>1 ? `<span class="cell tot">🏆 Total : <span class="blank"></span> objets · <span class="blank"></span> pts</span>` : ''}
+          ${showBonus ? '<span class="rule">⭐ défi bonus réussi = 1 trésor sauvé</span>' : ''}
         </div>
         ${giftHtml}`;
       sheetsEl.appendChild(sheet);
@@ -2411,10 +2493,10 @@ function buildPreview(){
       ${bonusHtml}
 
       <div class="sheet-score">
-        <span class="cell">Cochés sur cette page <span class="blank"></span> / ${chunk.length}</span>
+        <span class="cell">Objets sur cette page <span class="blank"></span> / ${pageChecks}</span>
         <span class="cell">Points <span class="blank"></span> / ${pagePts}</span>
-        ${isLast && chunks.length>1 ? `<span class="cell">🏆 TOTAL DU TRAJET <span class="blank"></span> / ${grandTotal}</span>` : ''}
-        <span class="rule">1 pt = fréquent · 3 pts = occasionnel · 5 pts = rare${showBonus ? ' · 🎯 défi bonus réussi = sauve 1 trésor manqué (⭐ dans sa case)' : ''}</span>
+        ${isLast && chunks.length>1 ? `<span class="cell tot">🏆 TOTAL DU TRAJET : <span class="blank"></span> objets · <span class="blank"></span> / ${grandTotal} pts</span>` : ''}
+        ${showBonus ? '<span class="rule">🎯 défi bonus réussi = sauve 1 trésor manqué (⭐ dans sa case)</span>' : ''}
       </div>
 
       ${giftHtml}
