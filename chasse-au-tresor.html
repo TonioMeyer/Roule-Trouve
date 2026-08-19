@@ -470,6 +470,12 @@ button,input,select{font-family:inherit;}
   padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:600;
 }
 .gift-preview .pill small{font-weight:400;opacity:.75;}
+.gift-warn{
+  margin-top:9px;padding:8px 11px;border-radius:9px;
+  background:var(--warn-bg,rgba(224,138,30,.13));
+  border:1px solid var(--occ);color:var(--ink);
+  font-size:12.5px;line-height:1.35;
+}
 .trip-grid .field input{font-family:var(--font-display);font-size:17px;}
 
 /* recherche */
@@ -2220,13 +2226,13 @@ document.getElementById('bonusList').addEventListener('click', (e)=>{
   if(rm){
     e.stopPropagation();
     bonusItems = bonusItems.filter(b=>b.id!==rm.dataset.rm);
-    saveState(); renderBonus();
+    saveState(); renderBonus(); renderGiftPreview();
     return;
   }
   const chip = e.target.closest('.bonus-chip');
   if(!chip) return;
   const b = bonusItems.find(x=>x.id===chip.dataset.id);
-  if(b){ b.selected = !b.selected; saveState(); renderBonus(); }
+  if(b){ b.selected = !b.selected; saveState(); renderBonus(); renderGiftPreview(); }
 });
 
 document.getElementById('addBonusBtn').addEventListener('click', ()=>{
@@ -2241,7 +2247,7 @@ document.getElementById('addBonusBtn').addEventListener('click', ()=>{
     id:"bocustom"+bonusCustomCount, selected:true, custom:true
   });
   emojiInput.value = ""; labelInput.value = "";
-  saveState(); renderBonus(); labelInput.focus();
+  saveState(); renderBonus(); renderGiftPreview(); labelInput.focus();
   toast(`Défi bonus « ${label} » ajouté 🎯`);
 });
 document.getElementById('bonusLabel').addEventListener('keydown', (e)=>{
@@ -2295,7 +2301,28 @@ function renderGiftPreview(){
     const extra = cfg.criteria==='count' ? ` <small>(${t-prev} obj)</small>` : '';
     return `<span class="pill">🎁 ${t}${unit}${extra}</span>`;
   }).join('');
-  box.innerHTML = `<div>${intro}</div><div class="plist">${pills}</div>`;
+  // Alerte de cohérence défis bonus / paquets (mode « objets » seulement).
+  // Les défis sont répartis en round-robin sur les paquets ; si le nombre de
+  // défis n'est pas un multiple du nombre de paquets, la répartition est
+  // inégale (certains paquets en ont un de plus, voire aucun).
+  let warn = '';
+  if(cfg.criteria === 'count'){
+    const nPacks = cfg.thresholds.length;
+    const nBonus = (typeof bonusItems !== 'undefined')
+      ? bonusItems.filter(b=>b.selected).length : 0;
+    if(nBonus > 0 && (nBonus % nPacks) !== 0){
+      const perPack = Math.floor(nBonus / nPacks);
+      const extra = nBonus % nPacks;
+      let detail;
+      if(perPack === 0){
+        detail = `${extra} paquet${extra>1?'s':''} sur ${nPacks} aura${extra>1?'ont':''} un défi, les autres aucun`;
+      } else {
+        detail = `${extra} paquet${extra>1?'s':''} aura${extra>1?'ont':''} ${perPack+1} défis, les autres ${perPack}`;
+      }
+      warn = `<div class="gift-warn">⚠️ ${nBonus} défi${nBonus>1?'s':''} bonus pour ${nPacks} paquets : répartition inégale (${detail}). Pour un partage égal, mets un multiple de ${nPacks}.</div>`;
+    }
+  }
+  box.innerHTML = `<div>${intro}</div><div class="plist">${pills}</div>${warn}`;
   box.classList.add('open');
 }
 document.getElementById('giftEnabled').addEventListener('change', ()=>{ syncGiftConfig(); saveState(); });
@@ -2418,36 +2445,42 @@ function buildPreview(){
   // on augmente N au minimum viable et on prévient l'utilisateur.
   const packMode = giftCfg.enabled && giftCfg.criteria === 'count' && currentSelection.length > 0;
   let packInfo = null; // {packs:[[cartes...]], corrected:bool, nAsked, nUsed}
+  // Répartition des défis bonus par paquet (round-robin) : bonusByPack[i] = […].
+  let bonusByPack = null;
   if(packMode){
     const nAsked = parseInt(document.getElementById('giftCount').value,10) || 1;
     const nCards = currentSelection.length;
-    // capacite par page. La 1re page peut être réduite par l'encart bonus.
-    const cap = fullCapacity;
-    const cap1 = firstPageCapacity;
-    // minimum de paquets pour que chaque page tienne : la 1re page compte pour
-    // cap1, les suivantes pour cap.
-    let minPacks = 1;
-    if(nCards > cap1) minPacks = 1 + Math.ceil((nCards - cap1) / cap);
+    // En mode paquets, un encart bonus peut apparaître sur CHAQUE page (les défis
+    // étant répartis). Par sécurité, on plafonne toutes les pages à la capacité
+    // réduite dès qu'au moins un défi est actif.
+    const cap = bonusActive ? firstPageCapacity : fullCapacity;
+    // minimum de paquets pour que chaque page tienne.
+    const minPacks = Math.max(1, Math.ceil(nCards / cap));
     const nUsed = Math.max(nAsked, minPacks);
-    // repartition en nUsed groupes ~egaux de cartes, petits d'abord, mais en
-    // plafonnant la 1re page a cap1 et les autres a cap (securite anti-debord).
+    // repartition en nUsed groupes ~egaux de cartes, petits d'abord, plafonnés a cap.
     const base = Math.floor(nCards / nUsed);
     const reste = nCards - base*nUsed;
     const packs = [];
     let pos = 0;
     for(let i=0;i<nUsed;i++){
       let size = base + (i >= nUsed-reste ? 1 : 0);
-      const capThis = (i===0 ? cap1 : cap);
-      if(size > capThis) size = capThis;
+      if(size > cap) size = cap;
       packs.push(currentSelection.slice(pos, pos+size));
       pos += size;
     }
-    // s'il reste des cartes (cas de plafonnement), on les ajoute en pages sup.
     while(pos < nCards){
       packs.push(currentSelection.slice(pos, pos+cap));
       pos += cap;
     }
     packInfo = {packs, corrected: packs.length>nAsked, nAsked, nUsed:packs.length};
+
+    // Distribution round-robin des défis sur les paquets : défi 0 -> paquet 0,
+    // défi 1 -> paquet 1, … puis on reboucle. Certains paquets peuvent rester
+    // sans défi si l'utilisateur n'en met pas assez.
+    bonusByPack = packs.map(()=>[]);
+    if(bonusActive){
+      bonusSelection.forEach((b,i)=>{ bonusByPack[i % packs.length].push(b); });
+    }
   }
 
   const chunks = [];
@@ -2480,8 +2513,12 @@ function buildPreview(){
   }
 
   chunks.forEach((chunk, idx)=>{
-    const showBonus = bonusActive && idx === 0;
-    const bonusHtml = showBonus ? renderBonusBlock(bonusSelection) : '';
+    // Défis bonus affichés sur CETTE page :
+    //  - mode paquets : la part round-robin du paquet (peut être vide) ;
+    //  - mode normal : tous les défis, sur la 1re page seulement.
+    const pageBonus = packMode ? (bonusByPack[idx] || []) : (idx === 0 ? bonusSelection : []);
+    const showBonus = pageBonus.length > 0;
+    const bonusHtml = showBonus ? renderBonusBlock(pageBonus) : '';
     const pagePts = chunk.reduce((s,i)=>s+itemPoints(i),0);
     const pageChecks = chunk.reduce((s,i)=>s+itemChecks(i),0);
     const isLast = idx === chunks.length-1;
