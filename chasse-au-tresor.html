@@ -836,6 +836,14 @@ button,input,select{font-family:inherit;}
 .sheet-gifts .gift-item{display:flex;align-items:center;gap:7px;font-size:20px;}
 .sheet-gifts .gift-item .box{width:19px;height:19px;border:2.5px solid #15202E;border-radius:5px;background:#fff;}
 .sheet-gifts .gift-item .at{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#41505f;}
+/* bandeau de paquet (mode cadeaux par objets) : en tête de chaque page */
+.pack-banner{display:flex;align-items:center;gap:9px;margin:2px 0 9px;}
+.pack-banner .pk-tag{
+  font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.5px;
+  background:var(--accent-dark);color:#fff;padding:3px 11px;border-radius:999px;
+}
+.pack-banner .pk-line{flex:1;border-bottom:1.5px dashed #9bbfa9;}
+.pack-banner .pk-goal{font-size:11.5px;font-weight:700;color:var(--accent-dark);}
 .sheet-foot{
   display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;
   margin-top:12px;padding-top:9px;border-top:1.5px dotted #b9c2cc;
@@ -932,6 +940,10 @@ button,input,select{font-family:inherit;}
 .sheet.half .sheet-gifts .gift-item{font-size:4.2mm;gap:1.4mm;}
 .sheet.half .sheet-gifts .gift-item .box{width:4mm;height:4mm;border-width:2px;border-radius:1mm;}
 .sheet.half .sheet-gifts .gift-item .at{font-size:2.3mm;}
+/* bandeau de paquet compact (demi-page) */
+.sheet.half .pack-banner{gap:2mm;margin:0 0 2mm;}
+.sheet.half .pack-banner .pk-tag{font-size:2.4mm;padding:1px 2.4mm;}
+.sheet.half .pack-banner .pk-goal{font-size:2.5mm;}
 .sheet.half .sheet-foot{display:none;}
 
 /* --- ENCART BONUS (portion dediee, hors grille principale) ---
@@ -2398,12 +2410,73 @@ function buildPreview(){
   const grandChecks = currentSelection.reduce((s,i)=>s+itemChecks(i),0);
   // les cadeaux « par objets » ont besoin du total d'objets pour calculer les paquets.
   const giftCfg = getGiftConfig(grandChecks);
+
+  // Mode « pagination par paquets » : actif seulement quand les cadeaux sont
+  // réglés sur le NOMBRE D'OBJETS. Chaque paquet = une page (ou demi-page), avec
+  // son bandeau. On découpe les CARTES en N groupes ~egaux (option "cartes
+  // egales" : pages bien remplies). Si un paquet dépasse la capacité d'une page,
+  // on augmente N au minimum viable et on prévient l'utilisateur.
+  const packMode = giftCfg.enabled && giftCfg.criteria === 'count' && currentSelection.length > 0;
+  let packInfo = null; // {packs:[[cartes...]], corrected:bool, nAsked, nUsed}
+  if(packMode){
+    const nAsked = parseInt(document.getElementById('giftCount').value,10) || 1;
+    const nCards = currentSelection.length;
+    // capacite par page. La 1re page peut être réduite par l'encart bonus.
+    const cap = fullCapacity;
+    const cap1 = firstPageCapacity;
+    // minimum de paquets pour que chaque page tienne : la 1re page compte pour
+    // cap1, les suivantes pour cap.
+    let minPacks = 1;
+    if(nCards > cap1) minPacks = 1 + Math.ceil((nCards - cap1) / cap);
+    const nUsed = Math.max(nAsked, minPacks);
+    // repartition en nUsed groupes ~egaux de cartes, petits d'abord, mais en
+    // plafonnant la 1re page a cap1 et les autres a cap (securite anti-debord).
+    const base = Math.floor(nCards / nUsed);
+    const reste = nCards - base*nUsed;
+    const packs = [];
+    let pos = 0;
+    for(let i=0;i<nUsed;i++){
+      let size = base + (i >= nUsed-reste ? 1 : 0);
+      const capThis = (i===0 ? cap1 : cap);
+      if(size > capThis) size = capThis;
+      packs.push(currentSelection.slice(pos, pos+size));
+      pos += size;
+    }
+    // s'il reste des cartes (cas de plafonnement), on les ajoute en pages sup.
+    while(pos < nCards){
+      packs.push(currentSelection.slice(pos, pos+cap));
+      pos += cap;
+    }
+    packInfo = {packs, corrected: packs.length>nAsked, nAsked, nUsed:packs.length};
+  }
+
   const chunks = [];
-  if(currentSelection.length){
+  if(packMode){
+    // une page par paquet
+    packInfo.packs.forEach(p=>chunks.push(p));
+  } else if(currentSelection.length){
     chunks.push(currentSelection.slice(0, firstPageCapacity));
     for(let i=firstPageCapacity;i<currentSelection.length;i+=fullCapacity){
       chunks.push(currentSelection.slice(i,i+fullCapacity));
     }
+  }
+
+  // Seuils cumulés en OBJETS, recalculés d'après le découpage réel des paquets
+  // (option "cartes egales" => seuils = cumul des coches de chaque paquet).
+  let giftThresholdsByPack = null;
+  if(packMode){
+    giftThresholdsByPack = [];
+    let acc = 0;
+    packInfo.packs.forEach(p=>{
+      acc += p.reduce((s,i)=>s+itemChecks(i),0);
+      giftThresholdsByPack.push(acc);
+    });
+    // on aligne les seuils affichés (ligne cadeaux du bas) sur ces valeurs réelles
+    giftCfg.thresholds = giftThresholdsByPack.slice();
+  }
+
+  if(packMode && packInfo.corrected){
+    toast(`🎁 ${packInfo.nUsed} cadeaux (au lieu de ${packInfo.nAsked}) pour que chaque paquet tienne sur une ${density==='half'?'demi-':''}page`);
   }
 
   chunks.forEach((chunk, idx)=>{
@@ -2412,6 +2485,10 @@ function buildPreview(){
     const pagePts = chunk.reduce((s,i)=>s+itemPoints(i),0);
     const pageChecks = chunk.reduce((s,i)=>s+itemChecks(i),0);
     const isLast = idx === chunks.length-1;
+    // en mode paquets : bandeau « PAQUET N → 🎁 » en tête de chaque page.
+    const packBanner = packMode
+      ? `<div class="pack-banner"><span class="pk-tag">PAQUET ${idx+1}</span><span class="pk-line"></span><span class="pk-goal">tout cocher → 🎁</span></div>`
+      : '';
     // les cadeaux (seuils sur le total du trajet) n'apparaissent que sur la
     // dernière page, là où le total se calcule.
     const giftHtml = (isLast && giftCfg.enabled) ? renderGiftLine(giftCfg) : '';
@@ -2440,6 +2517,8 @@ function buildPreview(){
           <div class="box-trip"><div class="lbl">🏁 Destination</div><div class="val">${esc(dest) || "&nbsp;"}</div></div>
           <div class="box-trip date"><div class="lbl">📅 Date</div><div class="val">&nbsp;</div></div>
         </div>
+
+        ${packBanner}
 
         <div class="sheet-grid">
           ${chunk.map(it=>`
@@ -2480,6 +2559,8 @@ function buildPreview(){
         <span>Destination : <span class="line">${esc(dest) || "&nbsp;"}</span></span>
         <span>Date : <span class="line">&nbsp;</span></span>
       </div>
+
+      ${packBanner}
 
       <div class="sheet-grid">
         ${chunk.map(it=>`
