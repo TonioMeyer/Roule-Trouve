@@ -838,7 +838,7 @@ button,input,select{font-family:inherit;}
   background:#f2f7f4;
 }
 .sheet-gifts .gl-title{font-weight:700;font-size:11.5px;color:var(--accent-dark);text-transform:uppercase;letter-spacing:.5px;}
-.sheet-gifts .gl-items{display:flex;gap:20px;flex-wrap:wrap;flex:1;justify-content:space-around;}
+.sheet-gifts .gl-items{display:flex;gap:14px 22px;flex-wrap:wrap;flex:1;justify-content:flex-start;align-items:center;}
 .sheet-gifts .gift-item{display:flex;align-items:center;gap:7px;font-size:20px;}
 .sheet-gifts .gift-item .box{width:19px;height:19px;border:2.5px solid #15202E;border-radius:5px;background:#fff;}
 .sheet-gifts .gift-item .at{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#41505f;}
@@ -942,7 +942,7 @@ button,input,select{font-family:inherit;}
   padding:1.4mm 2.6mm;gap:2.6mm;
 }
 .sheet.half .sheet-gifts .gl-title{font-size:2.3mm;}
-.sheet.half .sheet-gifts .gl-items{gap:3mm;}
+.sheet.half .sheet-gifts .gl-items{gap:2mm 5mm;justify-content:flex-start;}
 .sheet.half .sheet-gifts .gift-item{font-size:4.2mm;gap:1.4mm;}
 .sheet.half .sheet-gifts .gift-item .box{width:4mm;height:4mm;border-width:2px;border-radius:1mm;}
 .sheet.half .sheet-gifts .gift-item .at{font-size:2.3mm;}
@@ -962,18 +962,32 @@ button,input,select{font-family:inherit;}
    L'encart est fige a 17mm avec overflow cache : meme si trop de defis
    sont coches, il ne peut jamais deborder sur la page suivante. */
 .sheet-bonus{
-  flex:none;height:17mm;overflow:hidden;margin-top:1.3mm;
+  flex:none;overflow:hidden;margin-top:1.3mm;
   display:flex;flex-direction:column;gap:.6mm;
   border:1.5px dashed #c98a25;border-radius:2.1mm;background:#fff8ea;
   padding:1.1mm 2.2mm;
 }
+/* hauteur adaptative : défis en grille 2 colonnes, place réservée selon le
+   nombre de lignes (ceil(n/2)). */
+.sheet-bonus{height:13mm;}                         /* 1-2 défis : 1 ligne */
+.sheet-bonus[data-count="3"],
+.sheet-bonus[data-count="4"]{height:17mm;}         /* 2 lignes */
+.sheet-bonus[data-count="5"],
+.sheet-bonus[data-count="6"]{height:22mm;}         /* 3 lignes */
+.sheet-bonus[data-count="7"],
+.sheet-bonus[data-count="8"]{height:26mm;}         /* 4 lignes */
 .sheet-bonus .sb-title{
   flex:none;font-family:'Space Mono',monospace;font-weight:700;font-size:2.1mm;
   letter-spacing:.4px;text-transform:uppercase;color:#a07d2c;
 }
-.sheet-bonus .sb-grid{flex:1;min-height:0;display:flex;flex-wrap:wrap;gap:1mm;overflow:hidden;}
+/* grille 2 colonnes fixes : chaque défi occupe une demi-largeur, pas d'orphelin
+   ni de coupe imprévisible. */
+.sheet-bonus .sb-grid{
+  flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;
+  gap:1mm 1.6mm;align-content:start;overflow:hidden;
+}
 .sheet-bonus .sb-item{
-  display:flex;align-items:center;gap:1mm;flex:1 1 auto;min-width:40mm;
+  display:flex;align-items:center;gap:1mm;min-width:0;
   border:1px solid #e6d3a3;background:#fffdf6;border-radius:1.4mm;
   padding:.5mm 1.4mm;font-size:2.1mm;line-height:1.15;
 }
@@ -2416,7 +2430,7 @@ function renderGiftLine(cfg){
 
 function renderBonusBlock(list){
   if(!list.length) return '';
-  return `<div class="sheet-bonus">
+  return `<div class="sheet-bonus" data-count="${list.length}">
     <div class="sb-title">🎯 Défis bonus</div>
     <div class="sb-grid">
       ${list.map(b=>`
@@ -2435,11 +2449,26 @@ function buildPreview(){
   const bonusActive = bonusSelection.length > 0;
   // trames fixes (memes cartes dans les deux formats) : 3x11 en pleine page, 3x5 en demi-page.
   const fullCapacity = density === 'half' ? 15 : 33;
-  // L'encart bonus n'apparait que sur la 1re page (sinon on croirait qu'un
-  // defi peut sauver un tresor a chaque page). Seule cette 1re page perd
-  // donc une rangee (33->30 / 15->12) pour lui liberer la place ; les
-  // pages suivantes gardent la pleine capacite.
-  const firstPageCapacity = bonusActive ? (density === 'half' ? 12 : 30) : fullCapacity;
+  // L'encart bonus s'affiche sur la DERNIERE page (bilan de fin). Sa hauteur
+  // depend du nombre de defis (grille 2 colonnes) : ceil(n/2) lignes. On reserve
+  // donc autant de RANGEES de cartes que necessaire pour lui laisser la place.
+  //  - demi-page : 3 cartes/rangee ; l'encart occupe ~1 a 3 rangees.
+  //  - pleine page : 3 cartes/rangee aussi.
+  const bonusRows = bonusActive ? Math.ceil(bonusSelection.length / 2) : 0; // lignes de defis
+  // conversion en rangees de cartes a sacrifier (titre + lignes de defis).
+  // demi-page : chaque rangee carte ~7.5mm ; l'encart = 6mm(titre)+4.6mm*lignes.
+  // On mappe simplement : 1-2 lignes defis -> 1 rangee, 3 -> 2, 4 -> 2.
+  let bonusCardRows = 0;
+  if(bonusActive){
+    if(bonusRows <= 1) bonusCardRows = 1;
+    else if(bonusRows === 2) bonusCardRows = density === 'half' ? 2 : 1;
+    else if(bonusRows === 3) bonusCardRows = density === 'half' ? 3 : 2;
+    else bonusCardRows = density === 'half' ? 4 : 2;
+  }
+  const perRow = 3; // cartes par rangee dans les deux formats
+  const lastPageCapacity = bonusActive
+    ? Math.max(perRow, fullCapacity - bonusCardRows*perRow)
+    : fullCapacity;
   const pilot = document.getElementById('pilotName').value.trim();
   const dest  = document.getElementById('destination').value.trim();
   const sheetsEl = document.getElementById('sheets');
@@ -2465,7 +2494,7 @@ function buildPreview(){
     // En mode paquets, un encart bonus peut apparaître sur CHAQUE page (les défis
     // étant répartis). Par sécurité, on plafonne toutes les pages à la capacité
     // réduite dès qu'au moins un défi est actif.
-    const cap = bonusActive ? firstPageCapacity : fullCapacity;
+    const cap = bonusActive ? lastPageCapacity : fullCapacity;
     // minimum de paquets pour que chaque page tienne.
     const minPacks = Math.max(1, Math.ceil(nCards / cap));
     const nUsed = Math.max(nAsked, minPacks);
@@ -2509,10 +2538,10 @@ function buildPreview(){
     }
     if(bonusActive && chunks.length){
       const last = chunks[chunks.length-1];
-      if(last.length > firstPageCapacity){
+      if(last.length > lastPageCapacity){
         // la derniere page est trop pleine pour loger le bonus : on scinde.
-        const keep = last.slice(0, firstPageCapacity);
-        const overflow = last.slice(firstPageCapacity);
+        const keep = last.slice(0, lastPageCapacity);
+        const overflow = last.slice(lastPageCapacity);
         chunks[chunks.length-1] = keep;
         chunks.push(overflow);
       }

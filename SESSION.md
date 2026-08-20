@@ -1,6 +1,6 @@
 # Reprise de session — Roul'trouv (chasse-au-tresor.html)
 
-Dernière mise à jour : 2026-08-14
+Dernière mise à jour : 2026-08-18
 
 ## Contexte du projet
 
@@ -189,6 +189,117 @@ de base (rareté, éléments présents) est publiable.
 existe et est chargé, mais rien ne le republie pour l'instant — à faire si le
 besoin se présente, sur le même modèle que les items.
 
+---
+
+## Session 2026-08-18 : coches multiples, cadeaux, répartition des défis
+
+Grosse session de gameplay. Cinq chantiers, tous dans `chasse-au-tresor.html`.
+
+### 1. Coches multiples par item (×1 / ×2 / ×3)
+
+Un item peut être à repérer plusieurs fois (ex. « 2 voitures rouges »). Les
+points se **cumulent** à chaque coche.
+
+- Champ `mult` (1→3) sur chaque item. Helpers **source unique de vérité** :
+  `itemMult(it)` (borne 1..3), `itemPoints(it)` = `POINTS[rarity] * mult`,
+  `itemChecks(it)` = `mult` (un ×3 vaut 3 objets à trouver).
+  ⚠️ **Toujours passer par ces helpers** pour tout calcul de points/objets
+  (score max, totaux de page) — ne jamais réutiliser `POINTS[i.rarity]` seul.
+- Éditeur : pastille **`×n`** sur chaque carte (`.mult-chip`), clic = cycle
+  1→2→3→1 (comme la pastille de rareté). Placée **sous** le `pts-chip`
+  (top:32px/left:7px) pour ne jamais chevaucher la coche de sélection à droite.
+  Style ambre (`--accent2`) quand active, pour être lisible dans tous les thèmes
+  (le piège : sur thème nuit, un fond sombre sur fond sombre était invisible).
+- Persistance : `multOverrides` (items du catalogue, comme `rarityOverrides`) +
+  champ `mult` dans les customs.
+- Fiche : `boxesHtml(it)` génère autant de cases que le multiplicateur
+  (conteneur `.boxes`, `data-multi` si >1) ; suffixe **« · ×n »** dans le libellé
+  via `multSuffix(it)`.
+
+### 2. Cadeaux à débloquer par paliers — TROIS modes
+
+Toggle « 🎁 Cadeaux à débloquer » dans le panneau « L'équipage », avec un menu
+**Critère** à trois valeurs (valeur interne `giftCriteria`) :
+
+1. **`points`** — seuils manuels de points (ex. `20, 40, 60`). Pagination normale.
+2. **`count` (« Objets — paliers simples »)** — seuils manuels de cases cochées,
+   n'importe lesquelles (« 20 objets cochés → 🎁 »). Pagination normale.
+   **C'est le comportement initial**, restauré après un test terrain : compléter
+   un groupe entier (mode paquets) s'est avéré trop dur sur un vrai trajet.
+   Seuils manuels → permet des paliers **progressifs** (10, 25, 45, 70…).
+3. **`pack` (« Objets — paquets, 1 page par cadeau »)** — l'utilisateur saisit un
+   **nombre de cadeaux**, l'appli découpe et **une page = un paquet** (voir §3).
+
+UI (`syncGiftConfig`) : `pack` montre le champ « Nombre de cadeaux » ;
+`points`/`count` montrent le champ seuils (label adapté : « Paliers de points »
+vs « Paliers d'objets cochés »). Aperçu en direct des paliers (`renderGiftPreview`,
+pastilles `.pill`), rafraîchi quand on change la sélection, le nb de cadeaux ou
+les défis bonus.
+
+`getGiftConfig(objTotal)` renvoie `{enabled, criteria, thresholds[]}`. En mode
+`pack`, les seuils sont calculés par `giftTranches(total, n)` (paquets ~égaux,
+**petits d'abord**, le reste aux derniers). Persistance : `giftEnabled`,
+`giftCriteria`, `giftThresholds`, `giftCount`.
+
+Fiche : ligne **« 🎁 Cadeaux à débloquer »** (`renderGiftLine`) sur la **dernière
+page** seulement (une case à cocher + 🎁 + seuil par palier). Légende « (points) »
+ou « (objets trouvés) ».
+
+### 3. Mode paquets : pagination qui suit les paquets
+
+Quand `criteria === 'pack'` (variable `packMode`), la pagination ne suit plus la
+trame fixe mais les paquets : **une page (ou demi-page) = un paquet**, avec un
+bandeau **« PAQUET N → tout cocher → 🎁 »** (`.pack-banner`) en tête.
+
+- Découpage **par cartes** (« option cartes égales » : pages bien remplies), pas
+  par objets — choix assumé vu que la plupart des cartes sont ×1. Les seuils
+  affichés (`giftCfg.thresholds`) sont ensuite recalculés sur le **cumul réel des
+  coches** de chaque paquet.
+- Si un paquet dépasse la capacité d'une page, le nombre de cadeaux est
+  **augmenté automatiquement** au minimum viable + **toast** d'info.
+- Ce mode est le seul à redécouper la pagination ; `points` et `count` gardent la
+  pagination normale.
+
+### 4. Répartition des défis bonus
+
+**Avant** : tous les défis sur la 1re page. **Maintenant** :
+
+- **Mode normal** (`points`/`count` ou pas de cadeaux) : les défis passent sur la
+  **DERNIÈRE page** (bilan de fin, avec total + cadeaux) — plus cohérent.
+- **Mode paquets** : les défis sont répartis en **round-robin** sur les paquets
+  (`bonusByPack`, défi i → paquet `i % nPacks`). Certains paquets peuvent rester
+  sans défi si l'utilisateur n'en met pas assez — assumé.
+- **Alerte de cohérence** (mode paquets, dans l'aperçu éditeur `.gift-warn`) :
+  s'affiche si `nbDéfis % nbPaquets !== 0` (répartition inégale), avec le détail.
+  Ex. 4 paquets / 4 défis → pas d'alerte ; 4/6 → alerte ; 4/8 → pas d'alerte.
+
+### 5. Récap objets + correctifs d'affichage
+
+- **Bandeau score** : la légende « 1 pt = fréquent… » est **retirée**. Le bandeau
+  affiche « **Objets / N** » par page (via `pageChecks`, coches cumulées) et, sur
+  la dernière page, un total « **🏆 Total : objets · points** » (cellule `.tot`).
+- **Encart bonus à hauteur adaptative** : `.sheet-bonus[data-count="N"]` → grille
+  2 colonnes, hauteur selon `ceil(N/2)` lignes (13/17/22/26mm). Corrige le bug
+  « le 8e défi était coupé » (l'encart était figé à 17mm, ~7 défis maxi).
+- **Capacité de page proportionnelle au bonus** : `lastPageCapacity` (remplace
+  l'ancien `firstPageCapacity`) réserve autant de rangées de cartes que l'encart
+  bonus en a besoin (`bonusCardRows`), sur la dernière page. Si trop plein, le
+  surplus bascule sur une page de plus. Évite tout débordement.
+- **Ligne cadeaux** : `justify-content:flex-start` (au lieu de `space-around`)
+  pour éviter un 🎁 orphelin centré tout seul quand ça passe à la ligne.
+
+### Catalogue enrichi (trajet Bordeaux → Chenonceau → Beauval, été)
+
+Ajoutés dans **`data/items.json`** (la source de vérité en ligne — le
+`DEFAULT_ITEMS` du HTML n'est qu'un repli, cf. section catalogue externalisé) :
+- « Botte de foin ronde » (Nature & animaux, rareté 2)
+- « Panneau direction Beauval » (Panneaux & signalisation, rareté 3)
+
+⚠️ Pour les voir **en ligne**, il faut committer/pousser `data/items.json`.
+Emojis approximatifs (🌾🔵 / 🟤🐼) — mieux vaut uploader une vraie image via le
+crayon ✏️. Rappel : le logo Beauval est une marque déposée, non recréable ;
+l'utilisateur met sa propre capture.
+
 ## Emplacements clés dans le code
 
 Le CSS est découpé en sections numérotées et commentées (`1. TOKENS COMMUNS`,
@@ -201,8 +312,10 @@ Le CSS est découpé en sections numérotées et commentées (`1. TOKENS COMMUNS
   sur `<html data-theme="...">`
 - **Réglages GitHub** : modale ouverte par la roue crantée ⚙️ (bouton flottant
   en haut à droite) ; section JS « D. CONNEXION GITHUB »
-- **`buildPreview()`** : génère les deux formats ; `perPage` vaut 15 (demi-page)
-  ou 33 (pleine page)
+- **`buildPreview()`** : génère les deux formats. Capacités : `fullCapacity` = 15
+  (demi-page) ou 33 (pleine page) ; `lastPageCapacity` réduit la dernière page
+  selon la taille de l'encart bonus. Trois helpers cadeaux : `getGiftConfig`,
+  `giftTranches`, `renderGiftLine` ; défis : `renderBonusBlock` + `bonusByPack`.
 
 ## Détails techniques utiles
 
@@ -225,6 +338,15 @@ Le CSS est découpé en sections numérotées et commentées (`1. TOKENS COMMUNS
   badge serait peu lisible à l'impression — envisager de figer ces couleurs pour
   le print.
 - Ré-uploader les icônes créées avant le passage à 256px.
+- **À tester** cette session : impression avec 8 défis bonus (vérifier qu'ils
+  apparaissent tous), 5 seuils de cadeaux (pas d'orphelin), et surtout que la
+  dernière page ne déborde pas quand beaucoup de défis + trame pleine en
+  demi-page (le calcul `bonusCardRows` est prudent mais empirique).
+- Le mapping `bonusCardRows` (rangées de cartes sacrifiées selon le nb de défis)
+  est approximatif ; à ajuster si un test réel montre un débordement ou trop de
+  vide en demi-page.
+- `data/items.json` enrichi (botte de foin, panneau Beauval) — **penser à
+  committer/pousser** pour la version en ligne.
 
 ## Note d'outillage
 
