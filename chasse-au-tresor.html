@@ -1179,11 +1179,12 @@ button,input,select{font-family:inherit;}
               <label for="giftCriteria">Critère</label>
               <select id="giftCriteria">
                 <option value="points" selected>Total de points</option>
-                <option value="count">Nombre d'objets trouvés</option>
+                <option value="count">Objets — paliers simples</option>
+                <option value="pack">Objets — paquets (1 page par cadeau)</option>
               </select>
             </div>
             <div class="field" id="giftFieldThresholds">
-              <label for="giftThresholds">Paliers de points (séparés par des virgules)</label>
+              <label for="giftThresholds" id="giftThresholdsLabel">Paliers de points (séparés par des virgules)</label>
               <input type="text" id="giftThresholds" placeholder="ex : 20, 40, 60" value="20, 40, 60">
             </div>
             <div class="field" id="giftFieldCount" style="display:none;">
@@ -2274,10 +2275,17 @@ function syncGiftConfig(){
   const on = document.getElementById('giftEnabled').checked;
   document.getElementById('giftConfig').classList.toggle('open', on);
   const criteria = document.getElementById('giftCriteria').value;
-  const isCount = criteria === 'count';
-  // affiche le bon champ selon le critère
-  document.getElementById('giftFieldCount').style.display = isCount ? '' : 'none';
-  document.getElementById('giftFieldThresholds').style.display = isCount ? 'none' : '';
+  const isPack = criteria === 'pack';
+  // 'pack' -> champ "nombre de cadeaux" ; 'points'/'count' -> champ seuils manuels.
+  document.getElementById('giftFieldCount').style.display = isPack ? '' : 'none';
+  document.getElementById('giftFieldThresholds').style.display = isPack ? 'none' : '';
+  // label du champ seuils adapté à l'unité
+  const lbl = document.getElementById('giftThresholdsLabel');
+  if(lbl){
+    lbl.textContent = (criteria === 'points')
+      ? 'Paliers de points (séparés par des virgules)'
+      : "Paliers d'objets cochés (séparés par des virgules)";
+  }
   renderGiftPreview();
 }
 // Aperçu en direct des paliers calculés (visible seulement quand les cadeaux sont actifs).
@@ -2290,23 +2298,24 @@ function renderGiftPreview(){
   if(!cfg.enabled || !cfg.thresholds.length){ box.classList.remove('open'); box.innerHTML=''; return; }
   const unit = cfg.criteria === 'points' ? ' pts' : ' obj';
   let intro;
-  if(cfg.criteria === 'count'){
+  if(cfg.criteria === 'pack'){
     const n = cfg.thresholds.length;
-    intro = `Sur ${objTotal} objet${objTotal>1?'s':''} sélectionné${objTotal>1?'s':''}, répartis en ${n} paquet${n>1?'s':''} — un cadeau par paquet complété :`;
+    intro = `Sur ${objTotal} objet${objTotal>1?'s':''} sélectionné${objTotal>1?'s':''}, répartis en ${n} paquet${n>1?'s':''} — un cadeau par paquet complet (1 page par paquet) :`;
+  } else if(cfg.criteria === 'count'){
+    intro = 'Cadeaux débloqués dès que ce nombre d\'objets est coché (peu importe lesquels) :';
   } else {
     intro = 'Cadeaux débloqués en atteignant ces totaux de points :';
   }
   const pills = cfg.thresholds.map((t,i)=>{
     const prev = i===0?0:cfg.thresholds[i-1];
-    const extra = cfg.criteria==='count' ? ` <small>(${t-prev} obj)</small>` : '';
+    const extra = cfg.criteria==='pack' ? ` <small>(${t-prev} obj)</small>` : '';
     return `<span class="pill">🎁 ${t}${unit}${extra}</span>`;
   }).join('');
-  // Alerte de cohérence défis bonus / paquets (mode « objets » seulement).
-  // Les défis sont répartis en round-robin sur les paquets ; si le nombre de
-  // défis n'est pas un multiple du nombre de paquets, la répartition est
-  // inégale (certains paquets en ont un de plus, voire aucun).
+  // Alerte de cohérence défis bonus / paquets : uniquement en mode PAQUETS,
+  // où les défis sont répartis en round-robin sur les paquets. Si le nombre de
+  // défis n'est pas un multiple du nombre de paquets, la répartition est inégale.
   let warn = '';
-  if(cfg.criteria === 'count'){
+  if(cfg.criteria === 'pack'){
     const nPacks = cfg.thresholds.length;
     const nBonus = (typeof bonusItems !== 'undefined')
       ? bonusItems.filter(b=>b.selected).length : 0;
@@ -2376,10 +2385,13 @@ function getGiftConfig(objTotal){
   const enabled = document.getElementById('giftEnabled').checked;
   const criteria = document.getElementById('giftCriteria').value;
   let thresholds;
-  if(criteria === 'count'){
+  if(criteria === 'pack'){
+    // paquets : l'utilisateur choisit un NOMBRE de cadeaux, l'appli calcule les
+    // seuils cumulés en répartissant les objets en paquets ~égaux.
     const n = parseInt(document.getElementById('giftCount').value,10) || 0;
     thresholds = (n>0 && objTotal>0) ? giftTranches(objTotal, n) : [];
   } else {
+    // 'points' ou 'count' (paliers simples) : seuils saisis à la main.
     thresholds = (document.getElementById('giftThresholds').value || '')
       .split(/[,;]/).map(s=>parseInt(s.trim(),10))
       .filter(v=>Number.isFinite(v) && v>0)
@@ -2443,7 +2455,7 @@ function buildPreview(){
   // son bandeau. On découpe les CARTES en N groupes ~egaux (option "cartes
   // egales" : pages bien remplies). Si un paquet dépasse la capacité d'une page,
   // on augmente N au minimum viable et on prévient l'utilisateur.
-  const packMode = giftCfg.enabled && giftCfg.criteria === 'count' && currentSelection.length > 0;
+  const packMode = giftCfg.enabled && giftCfg.criteria === 'pack' && currentSelection.length > 0;
   let packInfo = null; // {packs:[[cartes...]], corrected:bool, nAsked, nUsed}
   // Répartition des défis bonus par paquet (round-robin) : bonusByPack[i] = […].
   let bonusByPack = null;
