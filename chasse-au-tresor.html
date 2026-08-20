@@ -968,14 +968,14 @@ button,input,select{font-family:inherit;}
   padding:1.1mm 2.2mm;
 }
 /* hauteur adaptative : défis en grille 2 colonnes, place réservée selon le
-   nombre de lignes (ceil(n/2)). */
-.sheet-bonus{height:13mm;}                         /* 1-2 défis : 1 ligne */
+   nombre de lignes (ceil(n/2)). Valeurs avec marge pour ne jamais rogner. */
+.sheet-bonus{height:14mm;}                         /* 1-2 défis : 1 ligne */
 .sheet-bonus[data-count="3"],
-.sheet-bonus[data-count="4"]{height:17mm;}         /* 2 lignes */
+.sheet-bonus[data-count="4"]{height:19mm;}         /* 2 lignes */
 .sheet-bonus[data-count="5"],
-.sheet-bonus[data-count="6"]{height:22mm;}         /* 3 lignes */
+.sheet-bonus[data-count="6"]{height:24mm;}         /* 3 lignes */
 .sheet-bonus[data-count="7"],
-.sheet-bonus[data-count="8"]{height:26mm;}         /* 4 lignes */
+.sheet-bonus[data-count="8"]{height:29mm;}         /* 4 lignes */
 .sheet-bonus .sb-title{
   flex:none;font-family:'Space Mono',monospace;font-weight:700;font-size:2.1mm;
   letter-spacing:.4px;text-transform:uppercase;color:#a07d2c;
@@ -2454,16 +2454,14 @@ function buildPreview(){
   // donc autant de RANGEES de cartes que necessaire pour lui laisser la place.
   //  - demi-page : 3 cartes/rangee ; l'encart occupe ~1 a 3 rangees.
   //  - pleine page : 3 cartes/rangee aussi.
-  const bonusRows = bonusActive ? Math.ceil(bonusSelection.length / 2) : 0; // lignes de defis
-  // conversion en rangees de cartes a sacrifier (titre + lignes de defis).
-  // demi-page : chaque rangee carte ~7.5mm ; l'encart = 6mm(titre)+4.6mm*lignes.
-  // On mappe simplement : 1-2 lignes defis -> 1 rangee, 3 -> 2, 4 -> 2.
+  const bonusRows = bonusActive ? Math.ceil(bonusSelection.length / 2) : 0; // lignes de defis (grille 2 col)
+  // Rangees de cartes a sacrifier pour loger l'encart. Une rangee carte = 18.3mm
+  // (17mm + 1.3mm gap). Hauteur encart selon lignes de defis (+marge 1.3mm) :
+  //   1 ligne -> ~15mm -> 1 rangee ; 2 lignes -> ~20mm -> 2 ; 3 -> ~25mm -> 2 ;
+  //   4 lignes -> ~30mm -> 2 rangees. Identique dans les deux formats.
   let bonusCardRows = 0;
   if(bonusActive){
-    if(bonusRows <= 1) bonusCardRows = 1;
-    else if(bonusRows === 2) bonusCardRows = density === 'half' ? 2 : 1;
-    else if(bonusRows === 3) bonusCardRows = density === 'half' ? 3 : 2;
-    else bonusCardRows = density === 'half' ? 4 : 2;
+    bonusCardRows = bonusRows <= 1 ? 1 : 2;
   }
   const perRow = 3; // cartes par rangee dans les deux formats
   const lastPageCapacity = bonusActive
