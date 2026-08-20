@@ -2500,9 +2500,22 @@ function buildPreview(){
     // une page par paquet
     packInfo.packs.forEach(p=>chunks.push(p));
   } else if(currentSelection.length){
-    chunks.push(currentSelection.slice(0, firstPageCapacity));
-    for(let i=firstPageCapacity;i<currentSelection.length;i+=fullCapacity){
+    // Pagination normale. L'encart bonus s'affiche sur la DERNIERE page (bilan
+    // de fin) : c'est donc elle qui doit être allégée d'une rangée si des defis
+    // sont actifs. On découpe à pleine capacite, puis si la dernière page
+    // dépasse la capacite reduite, on reporte le surplus sur une page de plus.
+    for(let i=0;i<currentSelection.length;i+=fullCapacity){
       chunks.push(currentSelection.slice(i,i+fullCapacity));
+    }
+    if(bonusActive && chunks.length){
+      const last = chunks[chunks.length-1];
+      if(last.length > firstPageCapacity){
+        // la derniere page est trop pleine pour loger le bonus : on scinde.
+        const keep = last.slice(0, firstPageCapacity);
+        const overflow = last.slice(firstPageCapacity);
+        chunks[chunks.length-1] = keep;
+        chunks.push(overflow);
+      }
     }
   }
 
@@ -2525,15 +2538,15 @@ function buildPreview(){
   }
 
   chunks.forEach((chunk, idx)=>{
+    const isLast = idx === chunks.length-1;
     // Défis bonus affichés sur CETTE page :
     //  - mode paquets : la part round-robin du paquet (peut être vide) ;
-    //  - mode normal : tous les défis, sur la 1re page seulement.
-    const pageBonus = packMode ? (bonusByPack[idx] || []) : (idx === 0 ? bonusSelection : []);
+    //  - mode normal : tous les défis, sur la DERNIERE page (bilan de fin).
+    const pageBonus = packMode ? (bonusByPack[idx] || []) : (isLast ? bonusSelection : []);
     const showBonus = pageBonus.length > 0;
     const bonusHtml = showBonus ? renderBonusBlock(pageBonus) : '';
     const pagePts = chunk.reduce((s,i)=>s+itemPoints(i),0);
     const pageChecks = chunk.reduce((s,i)=>s+itemChecks(i),0);
-    const isLast = idx === chunks.length-1;
     // en mode paquets : bandeau « PAQUET N → 🎁 » en tête de chaque page.
     const packBanner = packMode
       ? `<div class="pack-banner"><span class="pk-tag">PAQUET ${idx+1}</span><span class="pk-line"></span><span class="pk-goal">tout cocher → 🎁</span></div>`
