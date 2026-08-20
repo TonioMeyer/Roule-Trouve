@@ -69,7 +69,7 @@
   {
     "cat": "Véhicules",
     "emoji": "🏕️🚗",
-    "label": "Caravane tractée",
+    "label": "Caravane",
     "rarity": 2
   },
   {
@@ -205,14 +205,14 @@
   {
     "cat": "Mobilier urbain",
     "emoji": "🪑",
-    "label": "Banc public",
+    "label": "Banc",
     "rarity": 1,
     "icon": "banc"
   },
   {
     "cat": "Mobilier urbain",
     "emoji": "⛲",
-    "label": "Fontaine publique",
+    "label": "Fontaine",
     "rarity": 2
   },
   {
@@ -278,7 +278,7 @@
   {
     "cat": "Commerces & services",
     "emoji": "🍔",
-    "label": "Macdo",
+    "label": "Mcdo",
     "rarity": 2
   },
   {
@@ -302,7 +302,7 @@
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🛑",
-    "label": "Panneau stop",
+    "label": "Stop",
     "rarity": 1,
     "icon": "stop"
   },
@@ -398,7 +398,7 @@
   {
     "cat": "Panneaux & signalisation",
     "emoji": "💳",
-    "label": "Voie télépéage",
+    "label": "Image télépéage",
     "rarity": 2,
     "icon": "telepeage"
   },
@@ -417,14 +417,14 @@
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🟡📍",
-    "label": "Borne kilométrique jaune (départementale)",
+    "label": "Borne jaune",
     "rarity": 2,
     "icon": "borne_km_jaune"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🔴📍",
-    "label": "Borne kilométrique rouge (nationale)",
+    "label": "Borne rouge ",
     "rarity": 1,
     "icon": "borne_km_rouge"
   },
@@ -464,14 +464,14 @@
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🏙️",
-    "label": "Panneau d'entrée de ville",
+    "label": "Entrée de ville",
     "rarity": 1,
     "icon": "entree_ville"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🏙️🚫",
-    "label": "Panneau de sortie de ville (barré)",
+    "label": "Sortie de ville",
     "rarity": 1,
     "icon": "sortie_ville"
   },
@@ -498,14 +498,14 @@
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🚫🚗",
-    "label": "Interdiction de dépasser (sauf deux-roues)",
+    "label": "Interdiction de dépasser",
     "rarity": 2,
     "icon": "interdiction_depasser"
   },
   {
     "cat": "Panneaux & signalisation",
     "emoji": "🚫🚚",
-    "label": "Interdiction de dépasser (poids lourds >3,5t)",
+    "label": "Interdiction de dépasser",
     "rarity": 2,
     "icon": "interdiction_depasser_pl"
   },
@@ -549,7 +549,7 @@
   {
     "cat": "Nature & animaux",
     "emoji": "🌻",
-    "label": "Champ de tournesols",
+    "label": "Tournesols",
     "rarity": 3
   },
   {
@@ -723,7 +723,7 @@
   {
     "cat": "Infrastructures & patrimoine",
     "emoji": "🇫🇷",
-    "label": "Drapeau français (mairie)",
+    "label": "Drapeau français",
     "rarity": 2
   },
   {
